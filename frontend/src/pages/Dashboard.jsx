@@ -1,37 +1,54 @@
-﻿import { Button, Card, Container } from "react-bootstrap";
+﻿import {
+  Box, Button, Card, CardContent, Chip, Container,
+  Divider, Typography,
+} from "@mui/material";
+import LogoutIcon from "@mui/icons-material/Logout";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function Dashboard() {
   const { usuario, logout } = useAuth();
 
   return (
-    <Container className="py-5">
-      <Card className="shadow-sm">
-        <Card.Body className="p-4">
-          <h2 className="text-primary mb-3">🌊 Dashboard</h2>
-          <hr />
+    <Container maxWidth="md" sx={{ py: 4 }}>
+      <Card elevation={2}>
+        <CardContent sx={{ p: 4 }}>
+          <Typography variant="h4" color="primary" fontWeight="bold" gutterBottom>
+            🌊 Dashboard
+          </Typography>
+          <Divider sx={{ mb: 3 }} />
 
-          <p className="lead">
+          <Typography variant="h6" sx={{ mb: 2 }}>
             Olá, <strong>{usuario.nome}</strong>! 👋
-          </p>
+          </Typography>
 
-          <ul className="list-unstyled">
-            <li>
-              <strong>E-mail:</strong> <code>{usuario.email}</code>
-            </li>
-            <li>
+          <Box className="flex flex-col gap-2 mb-6">
+            <Typography>
+              <strong>E-mail:</strong>{" "}
+              <code className="bg-slate-100 px-2 py-1 rounded text-sm">
+                {usuario.email}
+              </code>
+            </Typography>
+            <Typography component="div">
               <strong>Papel:</strong>{" "}
-              <span className={`badge bg-${usuario.papel === "professor" ? "primary" : "info"}`}>
-                {usuario.papel}
-              </span>
-            </li>
-          </ul>
+              <Chip
+                label={usuario.papel}
+                color={usuario.papel === "professor" ? "primary" : "info"}
+                size="small"
+              />
+            </Typography>
+          </Box>
 
-          <hr />
-          <Button variant="outline-danger" onClick={logout}>
+          <Divider sx={{ mb: 3 }} />
+
+          <Button
+            variant="outlined"
+            color="error"
+            startIcon={<LogoutIcon />}
+            onClick={logout}
+          >
             Sair
           </Button>
-        </Card.Body>
+        </CardContent>
       </Card>
     </Container>
   );

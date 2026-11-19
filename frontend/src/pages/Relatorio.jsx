@@ -1,13 +1,14 @@
-﻿import { Button, Container } from "react-bootstrap";
+﻿import { Container, Typography } from "@mui/material";
 
 export default function Relatorio() {
   return (
-    <Container className="py-4">
-      <h2 className="text-primary mb-4">Relatório de Inscrições</h2>
-      <p className="text-muted">Página em construção — próximo encontro.</p>
-      <Button variant="primary" disabled>
-        📄 Baixar PDF (em breve)
-      </Button>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Typography variant="h4" color="primary" fontWeight="bold" gutterBottom>
+        Relatório
+      </Typography>
+      <Typography color="text.secondary">
+        Pagina em construcao - proximo encontro.
+      </Typography>
     </Container>
   );
 }

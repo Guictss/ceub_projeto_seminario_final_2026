@@ -1,10 +1,5 @@
-﻿/**
- * Envolve rotas que exigem login. Se não houver usuário:
- *   - enquanto ainda carrega -> mostra spinner
- *   - se não autenticado -> redireciona para /login (lembrando de onde veio)
- */
-import { Navigate, useLocation } from "react-router-dom";
-import { Container, Spinner } from "react-bootstrap";
+﻿import { Navigate, useLocation } from "react-router-dom";
+import { Box, CircularProgress } from "@mui/material";
 import { useAuth } from "../contexts/AuthContext";
 
 export default function PrivateRoute({ children }) {
@@ -13,12 +8,9 @@ export default function PrivateRoute({ children }) {
 
   if (loading) {
     return (
-      <Container
-        className="d-flex justify-content-center align-items-center"
-        style={{ minHeight: "60vh" }}
-      >
-        <Spinner animation="border" variant="primary" />
-      </Container>
+      <Box className="min-h-[60vh] flex items-center justify-center">
+        <CircularProgress />
+      </Box>
     );
   }
 

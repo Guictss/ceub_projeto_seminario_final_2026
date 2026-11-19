@@ -1,10 +1,14 @@
-﻿import { Container } from "react-bootstrap";
+﻿import { Container, Typography } from "@mui/material";
 
 export default function Doacoes() {
   return (
-    <Container className="py-4">
-      <h2 className="text-primary mb-4">Doações</h2>
-      <p className="text-muted">Página em construção — próximo encontro.</p>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Typography variant="h4" color="primary" fontWeight="bold" gutterBottom>
+        Doações
+      </Typography>
+      <Typography color="text.secondary">
+        Pagina em construcao - proximo encontro.
+      </Typography>
     </Container>
   );
 }

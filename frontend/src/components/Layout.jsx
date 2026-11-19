@@ -3,14 +3,12 @@ import Navbar from "./Navbar";
 
 export default function Layout() {
   return (
-    <div className="min-vh-100 d-flex flex-column bg-light">
+    <div className="min-h-screen flex flex-col bg-slate-50">
       <Navbar />
-
-      <main className="flex-grow-1">
+      <main className="flex-grow">
         <Outlet />
       </main>
-
-      <footer className="bg-white border-top py-3 text-center text-muted small">
+      <footer className="bg-white border-t py-4 text-center text-slate-500 text-sm">
         Projeto Vela Para Todos · FBVA · {new Date().getFullYear()}
       </footer>
     </div>
