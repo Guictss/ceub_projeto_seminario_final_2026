@@ -1,0 +1,895 @@
+openapi: 3.0.3
+info:
+  title: Vela Para Todos API
+  description: |
+    API REST do sistema de gerenciamento do Projeto Vela Para Todos, iniciativa da
+    Federação Brasileira de Vela Adaptada (FBVA). Fornece endpoints para autenticação,
+    gerenciamento de aulas, inscrições, doações e geração de relatórios.
+  version: 1.0.0
+  contact:
+    name: Guilherme Cervi
+    email: guisarabi@gmail.com
+  license:
+    name: Acadêmico — UniCEUB
+
+servers:
+  - url: https://a3-vela-api.onrender.com/api/v1
+    description: Produção
+  - url: http://localhost:5000/api/v1
+    description: Desenvolvimento local
+
+tags:
+  - name: Autenticação
+    description: Endpoints de cadastro, login e gerenciamento de sessão
+  - name: Aulas
+    description: CRUD de aulas (restrito a professores)
+  - name: Inscrições
+    description: Inscrições de alunos em aulas
+  - name: Usuários
+    description: Gerenciamento de usuários
+  - name: Doações
+    description: Registro e consulta de doações
+  - name: Notícias
+    description: Publicações institucionais
+  - name: Voluntários
+    description: Cadastro de voluntários
+  - name: Relatórios
+    description: Geração de relatórios em PDF
+  - name: Utilitários
+    description: Health check e metadados
+
+security:
+  - bearerAuth: []
+
+paths:
+
+  # ── AUTENTICAÇÃO ────────────────────────────────────────────────────
+  /auth/register:
+    post:
+      tags: [Autenticação]
+      summary: Cadastra novo usuário
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Usuário cadastrado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /auth/login:
+    post:
+      tags: [Autenticação]
+      summary: Autentica usuário e retorna tokens JWT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Autenticado com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '429': { $ref: '#/components/responses/RateLimit' }
+
+  /auth/refresh:
+    post:
+      tags: [Autenticação]
+      summary: Gera novo access_token usando refresh_token
+      responses:
+        '200':
+          description: Novo access_token gerado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshResponse'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /auth/logout:
+    post:
+      tags: [Autenticação]
+      summary: Invalida o token atual
+      responses:
+        '200':
+          description: Logout realizado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+
+  /auth/me:
+    get:
+      tags: [Autenticação]
+      summary: Retorna dados do usuário autenticado
+      responses:
+        '200':
+          description: Dados do usuário
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Usuario'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  # ── AULAS ───────────────────────────────────────────────────────────
+  /aulas:
+    get:
+      tags: [Aulas]
+      summary: Lista aulas (com filtros)
+      parameters:
+        - name: data_inicio
+          in: query
+          schema: { type: string, format: date }
+        - name: data_fim
+          in: query
+          schema: { type: string, format: date }
+        - name: professor_id
+          in: query
+          schema: { type: integer }
+        - name: com_vagas
+          in: query
+          schema: { type: boolean }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Lista paginada de aulas
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AulaList'
+    post:
+      tags: [Aulas]
+      summary: Cria nova aula (professor)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AulaRequest'
+      responses:
+        '201':
+          description: Aula criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Aula'
+        '400': { $ref: '#/components/responses/ValidationError' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /aulas/{id}:
+    get:
+      tags: [Aulas]
+      summary: Detalhes de uma aula
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: Dados da aula
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AulaDetalhe'
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Aulas]
+      summary: Atualiza aula (professor criador)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AulaRequest'
+      responses:
+        '200':
+          description: Aula atualizada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Aula'
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/BusinessRule' }
+    delete:
+      tags: [Aulas]
+      summary: Remove aula (professor criador)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204': { description: Removida }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /aulas/{id}/inscricoes:
+    get:
+      tags: [Aulas, Inscrições]
+      summary: Lista inscritos em uma aula (professor)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Lista paginada de inscritos
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InscricaoAlunoList'
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  # ── INSCRIÇÕES ──────────────────────────────────────────────────────
+  /inscricoes:
+    get:
+      tags: [Inscrições]
+      summary: Lista minhas inscrições (aluno)
+      parameters:
+        - name: futuras
+          in: query
+          schema: { type: boolean }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Inscrições do aluno autenticado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InscricaoList'
+    post:
+      tags: [Inscrições]
+      summary: Cria inscrição em uma aula (aluno)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [aula_id]
+              properties:
+                aula_id: { type: integer, example: 1 }
+      responses:
+        '201':
+          description: Inscrição criada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Inscricao'
+        '409':
+          description: Já inscrito nesta aula
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+        '422':
+          description: Sem vagas, aula passada ou conflito de horário
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /inscricoes/{id}:
+    delete:
+      tags: [Inscrições]
+      summary: Cancela inscrição (aluno dono)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204': { description: Cancelada }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  # ── USUÁRIOS ────────────────────────────────────────────────────────
+  /usuarios:
+    get:
+      tags: [Usuários]
+      summary: Lista usuários (professor)
+      parameters:
+        - name: papel
+          in: query
+          schema: { type: string, enum: [aluno, professor] }
+        - name: busca
+          in: query
+          schema: { type: string }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioList'
+
+  /usuarios/{id}:
+    get:
+      tags: [Usuários]
+      summary: Detalhes de usuário
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          description: Dados do usuário
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UsuarioDetalhe' }
+    put:
+      tags: [Usuários]
+      summary: Atualiza perfil (apenas próprio usuário)
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome: { type: string }
+                email: { type: string, format: email }
+                data_nascimento: { type: string, format: date }
+      responses:
+        '200':
+          description: Perfil atualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Usuario' }
+
+  /usuarios/{id}/senha:
+    put:
+      tags: [Usuários]
+      summary: Altera senha
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [senha_atual, senha_nova]
+              properties:
+                senha_atual: { type: string }
+                senha_nova: { type: string, minLength: 8 }
+      responses:
+        '200':
+          description: Senha alterada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+
+  # ── DOAÇÕES ─────────────────────────────────────────────────────────
+  /doacoes:
+    get:
+      tags: [Doações]
+      summary: Lista doações (professor)
+      parameters:
+        - name: forma_pagamento
+          in: query
+          schema: { type: string, enum: [pix, transferencia, paypal] }
+        - name: data_inicio
+          in: query
+          schema: { type: string, format: date }
+        - name: data_fim
+          in: query
+          schema: { type: string, format: date }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Lista paginada com resumo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DoacaoList' }
+    post:
+      tags: [Doações]
+      summary: Registra doação (público)
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DoacaoRequest' }
+      responses:
+        '201':
+          description: Doação registrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Doacao' }
+
+  # ── NOTÍCIAS ────────────────────────────────────────────────────────
+  /noticias:
+    get:
+      tags: [Notícias]
+      summary: Lista notícias publicadas (público)
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NoticiaList' }
+    post:
+      tags: [Notícias]
+      summary: Cria notícia (professor)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NoticiaRequest' }
+      responses:
+        '201':
+          description: Notícia criada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Noticia' }
+
+  /noticias/{id}:
+    get:
+      tags: [Notícias]
+      summary: Detalhes da notícia (público)
+      security: []
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '200':
+          description: Conteúdo completo
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NoticiaDetalhe' }
+    put:
+      tags: [Notícias]
+      summary: Atualiza notícia (professor)
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NoticiaRequest' }
+      responses:
+        '200':
+          description: Atualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Noticia' }
+    delete:
+      tags: [Notícias]
+      summary: Remove notícia (professor)
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      responses:
+        '204': { description: Removida }
+
+  # ── VOLUNTÁRIOS ─────────────────────────────────────────────────────
+  /voluntarios:
+    get:
+      tags: [Voluntários]
+      summary: Lista voluntários (professor)
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [pendente, aprovado, recusado] }
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PerPage'
+      responses:
+        '200':
+          description: Lista paginada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VoluntarioList' }
+    post:
+      tags: [Voluntários]
+      summary: Cadastro público de voluntário
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VoluntarioRequest' }
+      responses:
+        '201':
+          description: Voluntário registrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message: { type: string }
+                  voluntario: { $ref: '#/components/schemas/Voluntario' }
+
+  /voluntarios/{id}/status:
+    patch:
+      tags: [Voluntários]
+      summary: Atualiza status do voluntário (professor)
+      parameters: [{ $ref: '#/components/parameters/Id' }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [pendente, aprovado, recusado] }
+      responses:
+        '200':
+          description: Status atualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Voluntario' }
+
+  # ── RELATÓRIOS ──────────────────────────────────────────────────────
+  /relatorios/inscricoes.pdf:
+    get:
+      tags: [Relatórios]
+      summary: Gera relatório PDF de inscrições por aula (professor)
+      parameters:
+        - name: data_inicio
+          in: query
+          schema: { type: string, format: date }
+        - name: data_fim
+          in: query
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: PDF binário
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+
+  # ── UTILITÁRIOS ─────────────────────────────────────────────────────
+  /health:
+    get:
+      tags: [Utilitários]
+      summary: Health check
+      security: []
+      servers:
+        - url: https://a3-vela-api.onrender.com
+      responses:
+        '200':
+          description: Serviço saudável
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status: { type: string, example: healthy }
+                  db: { type: string, example: connected }
+                  version: { type: string, example: 1.0.0 }
+                  timestamp: { type: string, format: date-time }
+        '503':
+          description: Serviço indisponível
+
+components:
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: integer }
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, default: 1, minimum: 1 }
+    PerPage:
+      name: per_page
+      in: query
+      schema: { type: integer, default: 20, minimum: 1, maximum: 100 }
+
+  responses:
+    ValidationError:
+      description: Dados inválidos
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Unauthorized:
+      description: Não autenticado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Sem permissão
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Recurso não encontrado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Conflito de estado
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    BusinessRule:
+      description: Regra de negócio violada
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    RateLimit:
+      description: Rate limit excedido
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+  schemas:
+
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+        code: { type: string }
+        details:
+          type: object
+          additionalProperties:
+            type: array
+            items: { type: string }
+
+    PaginationMeta:
+      type: object
+      properties:
+        page: { type: integer }
+        per_page: { type: integer }
+        total: { type: integer }
+        total_pages: { type: integer }
+
+    # ── Autenticação ──
+    RegisterRequest:
+      type: object
+      required: [nome, email, senha, data_nascimento, papel]
+      properties:
+        nome: { type: string, minLength: 3, maxLength: 100 }
+        email: { type: string, format: email }
+        senha: { type: string, minLength: 8 }
+        data_nascimento: { type: string, format: date }
+        papel: { type: string, enum: [aluno, professor] }
+
+    RegisterResponse:
+      type: object
+      properties:
+        message: { type: string }
+        usuario: { $ref: '#/components/schemas/Usuario' }
+
+    LoginRequest:
+      type: object
+      required: [email, senha]
+      properties:
+        email: { type: string, format: email }
+        senha: { type: string }
+
+    LoginResponse:
+      type: object
+      properties:
+        access_token: { type: string }
+        refresh_token: { type: string }
+        token_type: { type: string, example: Bearer }
+        expires_in: { type: integer, example: 900 }
+        usuario: { $ref: '#/components/schemas/Usuario' }
+
+    RefreshResponse:
+      type: object
+      properties:
+        access_token: { type: string }
+        token_type: { type: string, example: Bearer }
+        expires_in: { type: integer, example: 900 }
+
+    # ── Usuário ──
+    Usuario:
+      type: object
+      properties:
+        id: { type: integer }
+        nome: { type: string }
+        email: { type: string }
+        papel: { type: string, enum: [aluno, professor] }
+        criado_em: { type: string, format: date-time }
+
+    UsuarioDetalhe:
+      allOf:
+        - $ref: '#/components/schemas/Usuario'
+        - type: object
+          properties:
+            data_nascimento: { type: string, format: date }
+            inscricoes_count: { type: integer, nullable: true }
+            aulas_count: { type: integer, nullable: true }
+
+    UsuarioList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Usuario' }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    # ── Aula ──
+    AulaRequest:
+      type: object
+      required: [data, horario, duracao_min, vagas]
+      properties:
+        data: { type: string, format: date }
+        horario: { type: string, example: "14:00" }
+        duracao_min: { type: integer, minimum: 15, maximum: 480 }
+        vagas: { type: integer, minimum: 1, maximum: 50 }
+        descricao: { type: string, maxLength: 255, nullable: true }
+
+    Aula:
+      type: object
+      properties:
+        id: { type: integer }
+        data: { type: string, format: date }
+        horario: { type: string }
+        duracao_min: { type: integer }
+        vagas_total: { type: integer }
+        vagas_disponiveis: { type: integer }
+        descricao: { type: string, nullable: true }
+        professor:
+          type: object
+          properties:
+            id: { type: integer }
+            nome: { type: string }
+
+    AulaDetalhe:
+      allOf:
+        - $ref: '#/components/schemas/Aula'
+        - type: object
+          properties:
+            inscritos_count: { type: integer }
+            criado_em: { type: string, format: date-time }
+
+    AulaList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Aula' }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    # ── Inscrição ──
+    Inscricao:
+      type: object
+      properties:
+        id: { type: integer }
+        aluno_id: { type: integer }
+        aula_id: { type: integer }
+        inscrito_em: { type: string, format: date-time }
+
+    InscricaoList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              inscrito_em: { type: string, format: date-time }
+              aula: { $ref: '#/components/schemas/Aula' }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    InscricaoAlunoList:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+            properties:
+              id: { type: integer }
+              inscrito_em: { type: string, format: date-time }
+              aluno: { $ref: '#/components/schemas/Usuario' }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    # ── Doação ──
+    DoacaoRequest:
+      type: object
+      required: [nome_doador, valor, forma_pagamento]
+      properties:
+        nome_doador: { type: string, minLength: 3, maxLength: 100 }
+        valor: { type: number, format: float, minimum: 0.01 }
+        forma_pagamento: { type: string, enum: [pix, transferencia, paypal] }
+
+    Doacao:
+      type: object
+      properties:
+        id: { type: integer }
+        nome_doador: { type: string }
+        valor: { type: number, format: float }
+        forma_pagamento: { type: string }
+        doado_em: { type: string, format: date-time }
+
+    DoacaoList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Doacao' }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+        resumo:
+          type: object
+          properties:
+            total_arrecadado: { type: number, format: float }
+            total_doacoes: { type: integer }
+
+    # ── Notícia ──
+    NoticiaRequest:
+      type: object
+      required: [titulo, conteudo]
+      properties:
+        titulo: { type: string, maxLength: 200 }
+        conteudo: { type: string }
+        imagem: { type: string, nullable: true }
+
+    Noticia:
+      type: object
+      properties:
+        id: { type: integer }
+        titulo: { type: string }
+        resumo: { type: string }
+        imagem: { type: string, nullable: true }
+        publicado_em: { type: string, format: date-time }
+
+    NoticiaDetalhe:
+      allOf:
+        - $ref: '#/components/schemas/Noticia'
+        - type: object
+          properties:
+            conteudo: { type: string }
+
+    NoticiaList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Noticia' }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }
+
+    # ── Voluntário ──
+    VoluntarioRequest:
+      type: object
+      required: [nome, email, mensagem]
+      properties:
+        nome: { type: string, minLength: 3, maxLength: 100 }
+        email: { type: string, format: email }
+        mensagem: { type: string, maxLength: 1000 }
+
+    Voluntario:
+      type: object
+      properties:
+        id: { type: integer }
+        nome: { type: string }
+        email: { type: string }
+        mensagem: { type: string }
+        status: { type: string, enum: [pendente, aprovado, recusado] }
+        inscrito_em: { type: string, format: date-time }
+
+    VoluntarioList:
+      type: object
+      properties:
+        data:
+          type: array
+          items: { $ref: '#/components/schemas/Voluntario' }
+        meta: { $ref: '#/components/schemas/PaginationMeta' }

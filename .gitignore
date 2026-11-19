@@ -1,0 +1,57 @@
+﻿# ── Python ─────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Ambiente virtual
+venv/
+env/
+ENV/
+.venv
+
+# Variáveis de ambiente (NÃO versionar!)
+.env
+.env.local
+.env.*.local
+
+# Bancos SQLite locais
+*.db
+*.sqlite
+*.sqlite3
+
+# Pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ── Node / React ───────────────────────────────────
+node_modules/
+dist/
+build/
+.vite/
+*.local
+
+# ── IDE / Editor ───────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ── SO ─────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ───────────────────────────────────────────
+*.log
+logs/
+
+# ── Outros ─────────────────────────────────────────
+.cache/
+tmp/
+
+# PDFs gerados em teste
+backend/relatorio_*.pdf
+

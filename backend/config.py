@@ -1,0 +1,71 @@
+﻿"""Configurações da aplicação Flask por ambiente."""
+import os
+from datetime import timedelta
+from dotenv import load_dotenv
+
+load_dotenv()
+
+
+class BaseConfig:
+    """Configurações compartilhadas por todos os ambientes."""
+
+    # Flask
+    SECRET_KEY = os.getenv("SECRET_KEY", "dev-insecure-change-me")
+
+    # SQLAlchemy
+    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///vela.db")
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        "pool_pre_ping": True,  # testa conexão antes de usar
+    }
+
+    # JWT
+    JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", SECRET_KEY)
+    JWT_ACCESS_TOKEN_EXPIRES = timedelta(
+        seconds=int(os.getenv("JWT_ACCESS_TOKEN_EXPIRES", 900))
+    )
+    JWT_REFRESH_TOKEN_EXPIRES = timedelta(
+        seconds=int(os.getenv("JWT_REFRESH_TOKEN_EXPIRES", 604800))
+    )
+    JWT_TOKEN_LOCATION = ["headers"]
+    JWT_HEADER_NAME = "Authorization"
+    JWT_HEADER_TYPE = "Bearer"
+
+    # CORS
+    CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:5173").split(",")
+
+    # API
+    API_PREFIX = "/api/v1"
+
+
+class DevelopmentConfig(BaseConfig):
+    """Desenvolvimento local — debug habilitado, erros detalhados."""
+    DEBUG = True
+    TESTING = False
+
+
+class TestingConfig(BaseConfig):
+    """Para rodar pytest — banco em memória."""
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    JWT_SECRET_KEY = "test-key"
+    WTF_CSRF_ENABLED = False
+
+
+class ProductionConfig(BaseConfig):
+    """Produção — debug desabilitado, erros mínimos."""
+    DEBUG = False
+    TESTING = False
+
+    # Em produção, estas variáveis DEVEM vir do ambiente
+    SECRET_KEY = os.environ["SECRET_KEY"]
+    JWT_SECRET_KEY = os.environ["JWT_SECRET_KEY"]
+    SQLALCHEMY_DATABASE_URI = os.environ["DATABASE_URL"]
+
+
+# Mapeamento usado pelo app.py para selecionar a config correta
+config_by_name = {
+    "development": DevelopmentConfig,
+    "testing": TestingConfig,
+    "production": ProductionConfig,
+}
