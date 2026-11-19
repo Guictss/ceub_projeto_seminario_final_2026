@@ -1,4 +1,4 @@
-# 🌊 Projeto Vela Para Todos
+# Projeto Vela Para Todos
 
 Sistema web acadêmico para a **Federação Brasileira de Vela Adaptada (FBVA)** — plataforma de gestão de aulas, inscrições, notícias, doações e voluntários da iniciativa *Vela Para Todos*, que promove a prática esportiva da vela por pessoas com deficiência.
 
@@ -6,7 +6,7 @@ Desenvolvido como **projeto final** da disciplina de **Desenvolvimento Web** do 
 
 ---
 
-## 📋 Sumário
+## Sumário
 
 - [Stack tecnológico](#️-stack-tecnológico)
 - [Estrutura do monorepo](#-estrutura-do-monorepo)
@@ -18,7 +18,7 @@ Desenvolvido como **projeto final** da disciplina de **Desenvolvimento Web** do 
 
 ---
 
-## 🛠️ Stack tecnológico
+## Stack tecnológico
 
 ### Backend — API REST
 - **Python 3.12** + **Flask 3**
@@ -45,7 +45,7 @@ Desenvolvido como **projeto final** da disciplina de **Desenvolvimento Web** do 
 
 ---
 
-## 📁 Estrutura do monorepo
+## Estrutura do monorepo
 
 ```text
 a3-vela/
@@ -86,7 +86,7 @@ a3-vela/
 
 ---
 
-## 🚀 Como rodar localmente
+## Como rodar localmente
 
 ### Pré-requisitos
 
@@ -149,7 +149,7 @@ Após rodar os seeds / popular manualmente, estas contas ficam disponíveis:
 
 ---
 
-## 🔌 Endpoints da API
+## Endpoints da API
 
 Todas as rotas estão prefixadas por `/api/v1`.
 
@@ -168,7 +168,7 @@ Swagger UI local: `http://localhost:5000/apidocs`.
 
 ---
 
-## 🏛️ Arquitetura
+## Arquitetura
 
 - **Padrão:** API REST + SPA (Single Page Application) desacoplados
 - **Autenticação:** JWT com `access_token` (15 min) + `refresh_token` (7 dias) — renovação transparente via interceptor axios no frontend
@@ -180,7 +180,7 @@ Decisões arquiteturais (ADRs) documentadas em [`docs/arquitetura.docx`](docs/).
 
 ---
 
-## 🎓 Projeto acadêmico
+## Projeto acadêmico
 
 | | |
 |---|---|
@@ -192,12 +192,12 @@ Decisões arquiteturais (ADRs) documentadas em [`docs/arquitetura.docx`](docs/).
 
 ---
 
-## 👥 Equipe
+## Equipe
 
 - **Guilherme Cervi** — Desenvolvimento full-stack
 
 ---
 
-## 📝 Licença
+## Licença
 
 Projeto acadêmico sem fins lucrativos. Código disponibilizado para estudo, referência e contribuição educacional.
