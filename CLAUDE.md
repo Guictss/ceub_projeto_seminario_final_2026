@@ -70,7 +70,7 @@ C:\dev\a3-vela\
 │   ├── src/
 │   │   ├── main.jsx        # BrowserRouter + AuthProvider + ThemeProvider + CssBaseline
 │   │   ├── App.jsx         # <Routes> aninhadas em <Layout>
-│   │   ├── pages/          # Login, Dashboard, Aulas (completa), Noticias, Doacoes, Voluntarios, Relatorio (placeholders)
+│   │   ├── pages/          # Login, Dashboard, Aulas (completa), Noticias (completa), Doacoes, Voluntarios, Relatorio (placeholders)
 │   │   ├── components/     # Layout, Navbar (mobile-first com Drawer), PrivateRoute, ProfessorRoute
 │   │   ├── contexts/       # AuthContext (hidrata localStorage, login/logout)
 │   │   ├── services/api.js # axios + interceptor JWT + silent refresh
@@ -164,9 +164,11 @@ Relationships: `aluno -> Usuario`, `aula -> Aula`
 
 ### noticias
 ```
-id, titulo, conteudo TEXT, criado_em
+id, titulo VARCHAR(200), conteudo TEXT, imagem VARCHAR(255) NULLABLE,
+publicado_em TIMESTAMP
 ```
-Property: `resumo` (primeiros N caracteres)
+**Atenção:** usa `publicado_em` (não `criado_em`).
+Property: `resumo` (primeiros N caracteres do conteúdo).
 
 ### doacoes
 ```
@@ -208,7 +210,11 @@ inscrito_em
 | POST | `/inscricoes` | aluno | body `{aula_id}`. Regras: não duplicar, aula futura, com vagas, sem conflito de horário |
 | DELETE | `/inscricoes/<id>` | aluno | cancelar |
 | GET | `/aulas/<id>/inscricoes` | professor | lista inscritos |
-| GET/POST/PUT/DELETE | `/noticias/*` | público lê · professor escreve | — |
+| GET | `/noticias` | público | query: `page, per_page, q` (busca ilike no título) |
+| GET | `/noticias/<id>` | público | retorna `conteudo` completo |
+| POST | `/noticias` | professor | body `{titulo, conteudo, imagem?}` |
+| PUT | `/noticias/<id>` | professor | — |
+| DELETE | `/noticias/<id>` | professor | — |
 | GET | `/doacoes` | professor | filtro: `forma_pagamento` + resumo |
 | POST | `/doacoes` | público | rate limit 10/min |
 | GET | `/voluntarios` | professor | filtro: `status` |
@@ -234,6 +240,23 @@ inscrito_em
 (no body do POST/PUT envia `vagas`). `inscritos` calcula como `vagas_total - vagas_disponiveis`.
 Não existe `inscritos_count` nem `tem_vagas` no response.
 
+### Notícias — DOIS schemas de response (padrão lista-vs-detalhe)
+```json
+// GET /noticias  → NoticiaListSchema (SEM conteudo)
+{ "id": 3, "titulo": "...", "resumo": "...", "imagem": null, "publicado_em": "..." }
+
+// GET /noticias/<id>  → NoticiaDetailSchema (COM conteudo)
+{ "id": 3, "titulo": "...", "conteudo": "...", "imagem": null, "publicado_em": "..." }
+```
+**Padrão importante:** em recursos com conteúdo longo (texto, HTML), a API retorna preview
+na listagem e conteúdo completo só no detalhe. Frontend deve chamar `GET /noticias/<id>`
+ao abrir modal de leitura ou edição.
+
+### Validações (Marshmallow) — Notícias
+- `titulo`: 5 a 200 caracteres
+- `conteudo`: mínimo 20 caracteres
+- `imagem`: opcional, máximo 255 caracteres (URL completa)
+
 ---
 
 ## 8. Padrões de código estabelecidos
@@ -245,6 +268,8 @@ Não existe `inscritos_count` nem `tem_vagas` no response.
 - Helper de paginação em `utils/pagination.py`
 - Validação sempre com Marshmallow, erro 400 com `details`
 - Rate limits em rotas públicas sensíveis (doações 10/min, voluntários 3/min)
+- Para busca textual em listagens: `query.filter(Model.campo.ilike(f"%{q}%"))` com param `q`
+- Para recursos com conteúdo longo: dois schemas separados (`ListSchema` sem conteúdo, `DetailSchema` completo)
 
 ### Frontend
 - Páginas em `src/pages/<Nome>.jsx` (arquivo único; componentes auxiliares inline se específicos da página)
@@ -255,6 +280,10 @@ Não existe `inscritos_count` nem `tem_vagas` no response.
 - Loading/erro/vazio sempre tratados em páginas de lista
 - Feedback via `<Snackbar>` do MUI
 - Confirmação de ação destrutiva via `<Dialog>`
+- **Erros amigáveis:** helper `extrairMensagemErro(data)` que lê `data.details.campo[0]` do Marshmallow (ver `Noticias.jsx`)
+- **Validação visual:** campos com `error={}` e `helperText` mostrando "X/max (mínimo N)"
+- **Botão desabilitado** enquanto form inválido (`disabled={!tituloValido || !conteudoValido}`)
+- Para recursos com conteúdo longo: modal de leitura faz `GET /recurso/<id>` quando abre (não confia no preview da lista)
 
 ### Mobile-first
 - Toda nova página começa em 1 coluna no mobile e expande com `<Grid size={{ xs: 12, sm: 6, md: 4 }}>`
@@ -306,14 +335,24 @@ $params.Body = [System.Text.Encoding]::UTF8.GetBytes($json)
 Se mudar a senha do MySQL, editar `C:\xampp\phpMyAdmin\config.inc.php`:
 `auth_type = 'cookie'` (vai pedir login) ou `password = 'nova_senha'` com `AllowNoPassword = false`.
 
+### URL de imagem em campo `<img>` deve ser URL DIRETA
+Não aceita URL de página web (ex: `designdobom.com.br/category/imagem-para-sexta/`).
+Precisa ser um link que termine em `.jpg`, `.png`, `.webp`, `.gif`, etc.
+Pra testar, usar `https://picsum.photos/800/400` que sempre funciona.
+
+### Backend pode não ter filtros documentados — sempre checar o blueprint
+Exemplo: `routes/noticias.py` originalmente não tinha filtro `q` nenhum.
+Tivemos que adicionar manualmente no backend para a busca funcionar no frontend.
+
 ---
 
-## 10. Estado atual do projeto (snapshot 2026-11-19)
+## 10. Estado atual do projeto (snapshot 2026-11-20)
 
 ### Backend
 - ✅ 8 blueprints implementados e manualmente testados
 - ✅ Health check em `/api/v1/health`
 - ✅ OpenAPI em `/apidocs` (via flasgger)
+- ✅ Filtro `q` (busca por título) adicionado em `/noticias`
 - ⬜ Deploy no Render.com
 - ⬜ Migração para PostgreSQL em produção
 
@@ -322,7 +361,7 @@ Se mudar a senha do MySQL, editar `C:\xampp\phpMyAdmin\config.inc.php`:
 - ✅ Autenticação completa com rotas protegidas
 - ✅ Navbar mobile-first
 - ✅ **Página Aulas completa** (lista, filtros, paginação, CRUD, inscrever)
-- ⬜ Página Notícias (placeholder)
+- ✅ **Página Notícias completa** (lista, busca, CRUD, modal de leitura, suporte a imagem)
 - ⬜ Página Doações (placeholder)
 - ⬜ Página Voluntários (placeholder)
 - ⬜ Página Relatório (placeholder — botão de baixar PDF)
@@ -349,33 +388,51 @@ Se mudar a senha do MySQL, editar `C:\xampp\phpMyAdmin\config.inc.php`:
 
 ## 12. Template de página (copie para criar novas)
 
-Para **Notícias, Doações, Voluntários**, siga o padrão da página `Aulas.jsx`:
+Para **Doações, Voluntários**, siga o padrão de `Aulas.jsx` (CRUD completo) ou `Noticias.jsx` (lista + conteúdo longo):
+
+### Checklist de página de listagem
 1. `useState` para `data`, `loading`, `erro`, `meta`, `filtros`, `filtrosAplicados`
 2. `useCallback` com `carregar()` que chama `api.get("/recurso", { params })`
 3. `useEffect` que dispara `carregar()` quando `filtrosAplicados` muda
 4. Loading: `<CircularProgress>` centralizado
-5. Erro: `<Alert severity="error">`
-6. Vazio: `<Alert severity="info">`
+5. Erro: `<Alert severity="error">` com `extrairMensagemErro()` helper
+6. Vazio: `<Alert severity="info">` com mensagem contextual (com/sem filtros)
 7. Lista: `<Grid container>` com `<Grid size={{ xs: 12, sm: 6, md: 4 }}>` + card
 8. Modal CRUD inline (componente no mesmo arquivo)
 9. Dialog de confirmação de delete
 10. Snackbar para feedback
 11. Botões de criar só para professor (verificar `usuario.papel`)
-12. Edit/delete só para o dono do recurso
+12. Edit/delete só para o dono do recurso (ou todos os professores, conforme regra)
+13. Para conteúdo longo: `GET /recurso/<id>` ao abrir modal de leitura/edição
+
+### Helper padrão para erros amigáveis
+Toda página deve ter este helper copiado (já implementado em `Noticias.jsx`):
+```js
+function extrairMensagemErro(data) {
+  if (!data) return "Erro desconhecido";
+  if (data.details) {
+    const primeiraChave = Object.keys(data.details)[0];
+    if (primeiraChave) {
+      const msgs = data.details[primeiraChave];
+      return Array.isArray(msgs) ? msgs[0] : String(msgs);
+    }
+  }
+  return data.error || "Erro ao processar requisição";
+}
+```
 
 ---
 
 ## 13. Próximos passos planejados
 
-1. Página **Notícias** (público lê, professor escreve — mais simples que Aulas)
-2. Página **Doações** (listar + filtro por forma_pagamento + total)
-3. Página **Voluntários** (listar + aprovar/recusar)
-4. Página **Relatório** (botão que faz `GET /relatorios/inscricoes.pdf` e abre PDF)
-5. Landing page pública (portar design do PHP antigo)
-6. Melhorias de acessibilidade (warnings `aria-hidden` do MUI Dialog)
-7. Deploy backend no Render + frontend no Vercel
-8. GitHub Actions para lint + testes
+1. Página **Doações** (listar + filtro por forma_pagamento + total)
+2. Página **Voluntários** (listar + aprovar/recusar)
+3. Página **Relatório** (botão que faz `GET /relatorios/inscricoes.pdf` e abre PDF)
+4. Landing page pública (portar design do PHP antigo)
+5. Melhorias de acessibilidade (warnings `aria-hidden` do MUI Dialog)
+6. Deploy backend no Render + frontend no Vercel
+7. GitHub Actions para lint + testes
 
 ---
 
-_Última atualização: 2026-11-19 — mantenha este arquivo sincronizado com o código._
+_Última atualização: 2026-11-20 — mantenha este arquivo sincronizado com o código._

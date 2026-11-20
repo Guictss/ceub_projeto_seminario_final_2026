@@ -31,7 +31,14 @@ def _not_found():
 # ── GET /noticias (público) ────────────────────────────────────────────────
 @noticias_bp.route("", methods=["GET"])
 def listar():
-    query = Noticia.query.order_by(Noticia.publicado_em.desc())
+    query = Noticia.query
+
+    # Filtro: busca por título (case-insensitive, substring)
+    q = (request.args.get("q") or "").strip()
+    if q:
+        query = query.filter(Noticia.titulo.ilike(f"%{q}%"))
+
+    query = query.order_by(Noticia.publicado_em.desc())
     result = paginate(query, NoticiaListSchema(), "noticias.listar")
     return jsonify(result), 200
 
