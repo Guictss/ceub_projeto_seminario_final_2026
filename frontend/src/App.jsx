@@ -3,21 +3,23 @@ import Layout from "./components/Layout";
 import PrivateRoute from "./components/PrivateRoute";
 import ProfessorRoute from "./components/ProfessorRoute";
 
-import Aulas from "./pages/Aulas";
-import Dashboard from "./pages/Dashboard";
-import Doacoes from "./pages/Doacoes";
+import Landing from "./pages/Landing";
 import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import Aulas from "./pages/Aulas";
 import Noticias from "./pages/Noticias";
-import Relatorio from "./pages/Relatorio";
+import Doacoes from "./pages/Doacoes";
 import Voluntarios from "./pages/Voluntarios";
+import Relatorio from "./pages/Relatorio";
 
 function App() {
   return (
     <Routes>
-      {/* Rota pública */}
+      {/* Rotas publicas */}
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
 
-      {/* Rotas privadas (envoltas no Layout com Navbar) */}
+      {/* Rotas privadas (envolvidas em Layout com Navbar) */}
       <Route
         element={
           <PrivateRoute>
@@ -25,34 +27,20 @@ function App() {
           </PrivateRoute>
         }
       >
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/aulas" element={<Aulas />} />
         <Route path="/noticias" element={<Noticias />} />
-
-        {/* Rotas só de professor */}
         <Route
           path="/doacoes"
-          element={
-            <ProfessorRoute>
-              <Doacoes />
-            </ProfessorRoute>
-          }
+          element={<ProfessorRoute><Doacoes /></ProfessorRoute>}
         />
         <Route
           path="/voluntarios"
-          element={
-            <ProfessorRoute>
-              <Voluntarios />
-            </ProfessorRoute>
-          }
+          element={<ProfessorRoute><Voluntarios /></ProfessorRoute>}
         />
         <Route
           path="/relatorio"
-          element={
-            <ProfessorRoute>
-              <Relatorio />
-            </ProfessorRoute>
-          }
+          element={<ProfessorRoute><Relatorio /></ProfessorRoute>}
         />
       </Route>
 

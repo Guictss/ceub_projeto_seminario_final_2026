@@ -28,7 +28,7 @@ export default function Navbar() {
   }
 
   const links = [
-    { to: "/", label: "Dashboard", end: true },
+    { to: "/dashboard", label: "Dashboard", end: true },
     { to: "/aulas", label: "Aulas" },
     { to: "/noticias", label: "Notícias" },
     ...(ehProfessor
@@ -58,7 +58,7 @@ export default function Navbar() {
           <Typography
             variant="h6"
             component={Link}
-            to="/"
+            to="/dashboard"
             sx={{
               fontWeight: "bold",
               color: "inherit",
@@ -170,3 +170,5 @@ export default function Navbar() {
     </>
   );
 }
+
+
