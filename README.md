@@ -35,7 +35,7 @@ Desenvolvido como **projeto final** da disciplina de **Desenvolvimento Web** do 
 - **React 19** + **Vite 7**
 - **React Router 7** (roteamento declarativo)
 - **Axios** com interceptor JWT (renovação automática em 401 — *silent refresh*)
-- **Tailwind CSS** + **Materialize** *(em migração — anteriormente Bootstrap 5)*
+- **Tailwind CSS** + **Material UI** (MUI)
 - **Context API** para gerenciamento global de autenticação
 
 ### Infraestrutura (planejado)
