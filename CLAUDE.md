@@ -16,8 +16,10 @@ projeto *Vela Para Todos*. Monorepo com **API REST em Flask** e **SPA em React**
 **Repo:** https://github.com/Guictss/ceub_projeto_seminario_final_2026
 **Caminho local:** `C:\dev\a3-vela\`
 
-**Status (2026-11-20):** desenvolvimento das 7 páginas concluído.
-Em andamento: adaptação da identidade visual do projeto PHP original (Landing já pronta).
+**Status (2026-11-21):** adaptação da identidade visual PHP **CONCLUÍDA**.
+Login split-screen, Navbar admin, Cadastro público, CRUD de Usuários (backend + frontend)
+e Leaflet (mapa real na landing com ícone customizado) prontos.
+**Em andamento:** VLibras + widget de acessibilidade; depois deploy.
 
 ---
 
@@ -37,6 +39,7 @@ Em andamento: adaptação da identidade visual do projeto PHP original (Landing 
 - Axios com interceptor JWT (silent refresh em 401)
 - **Material UI v6+** (Emotion, Roboto, `@mui/icons-material`)
 - **Tailwind CSS 4** via `@tailwindcss/vite` (zero-config, `@import "tailwindcss";`)
+- **Leaflet + react-leaflet** (mapa interativo em "Onde estamos")
 - **Mobile-first obrigatório** (requisito do projeto)
 
 ### Tema visual FBVA (paleta OFICIAL — do style.css do PHP)
@@ -89,26 +92,26 @@ Referência pelo React: `const IMG = "/assets/img"` e `${IMG}/arquivo.png`
 ```text
 C:\dev\a3-vela\
 ├── backend/
-│   ├── app.py              # factory, registra 7 blueprints
+│   ├── app.py              # factory, registra 8 blueprints (incluindo /usuarios)
 │   ├── config.py           # Base/Dev/Test/Prod configs
 │   ├── extensions.py       # db, migrate, jwt, cors, limiter
 │   ├── models/             # Usuario, Aula, Inscricao, Noticia, Doacao, Voluntario
-│   ├── routes/             # auth, aulas, inscricoes (2 bps), noticias, doacoes, voluntarios, relatorios
-│   ├── schemas/            # Marshmallow para request/response
+│   ├── routes/             # auth, aulas, inscricoes (2 bps), noticias, doacoes, voluntarios, relatorios, usuarios
+│   ├── schemas/            # Marshmallow (RegisterSchema, LoginSchema, UsuarioResponseSchema, UsuarioUpdateSchema, etc)
 │   ├── services/pdf_relatorio.py
-│   ├── utils/              # decorators, pagination
+│   ├── utils/              # decorators (@professor_required, @aluno_required), pagination
 │   ├── migrations/
 │   ├── instance/vela.db
 │   ├── .env
 │   ├── openapi.yaml
 │   └── vela-init.ps1
 ├── frontend/
-│   ├── public/assets/img/  # imagens copiadas do PHP (mascote, logos, patterns, fotos)
+│   ├── public/assets/img/  # imagens copiadas do PHP
 │   ├── src/
-│   │   ├── main.jsx        # Tema MUI com paleta FBVA completa + customizacoes
-│   │   ├── App.jsx         # Routes
-│   │   ├── pages/          # Landing, Login, Dashboard, Aulas, Noticias, Doacoes, Voluntarios, Relatorio
-│   │   ├── components/     # Layout, Navbar, PrivateRoute, ProfessorRoute, HeaderLanding
+│   │   ├── main.jsx        # Tema MUI com paleta FBVA completa + customizações
+│   │   ├── App.jsx         # Routes (incluindo /cadastro e /usuarios)
+│   │   ├── pages/          # Landing, Login, Cadastro, Dashboard, Aulas, Noticias, Doacoes, Voluntarios, Usuarios, Relatorio
+│   │   ├── components/     # Layout, Navbar (visual PHP), PrivateRoute, ProfessorRoute, HeaderLanding, MapaLocalizacao
 │   │   ├── contexts/       # AuthContext
 │   │   ├── services/api.js
 │   │   ├── index.css
@@ -127,11 +130,12 @@ C:\dev\a3-vela\
 ### Estrutura de rotas
 
 ```
-/                    → Landing publica (visual PHP 100%)
-/login               → Login (ainda React/MUI padrao — Etapa 3)
+/                    → Landing publica (visual PHP 100% + Leaflet)
+/login               → Login split-screen (esquerda azul com Zoe + direita form)
+/cadastro            → Cadastro publico split-screen (mesmo padrao)
 /dashboard           → Dashboard (ainda React/MUI padrao)
 /aulas, /noticias    → privadas, qualquer logado
-/doacoes, /voluntarios, /relatorio → privadas, so professor
+/doacoes, /voluntarios, /relatorio, /usuarios → privadas, so professor
 ```
 
 Logout redireciona para `/` (landing). Fallback de qualquer URL desconhecida também vai pra `/`.
@@ -170,11 +174,15 @@ cd C:\dev\a3-vela\backend
 
 ## 6. Usuários de teste (senha: `Senha123!`)
 
-| ID | Papel     | E-mail              | Nome            |
-|----|-----------|---------------------|-----------------|
-| 1  | professor | `teste@vela.com`    | —               |
-| 2  | aluno     | `maria@teste.com`   | Maria Silva     |
-| 3  | professor | `carlos@teste.com`  | Carlos Andrade  |
+> ⚠️ **Os IDs podem variar entre ambientes!** O seed original tem uma ordem; o
+> banco atual pode ter outra. Sempre fazer `GET /usuarios` pra ver o ID real
+> antes de testar PUT/DELETE em um ID específico.
+
+| Papel     | E-mail              | Nome típico       |
+|-----------|---------------------|-------------------|
+| professor | `carlos@teste.com`  | Carlos Andrade    |
+| professor | `teste@vela.com`    | Guilherme Teste   |
+| aluno     | `maria@teste.com`   | Maria Silva       |
 
 **Reset de senha (se login falhar):**
 ```powershell
@@ -243,11 +251,15 @@ inscrito_em
 
 | Método | Rota | Papel | Observações |
 |---|---|---|---|
-| POST | `/auth/register` | público | body `{nome, email, senha, data_nascimento, papel}` |
-| POST | `/auth/login` | público | body `{email, senha}` -> `{access_token, refresh_token, usuario}` |
+| POST | `/auth/register` | público | body `{nome, email, senha, data_nascimento, papel}`. Rate limit 3/min |
+| POST | `/auth/login` | público | body `{email, senha}` -> `{access_token, refresh_token, usuario}`. Rate 5/min |
 | POST | `/auth/refresh` | refresh JWT | retorna `{access_token}` |
 | POST | `/auth/logout` | JWT | blocklist em memória |
 | GET | `/auth/me` | JWT | dados do usuário logado |
+| GET | `/usuarios` | professor | query: `page, per_page, papel, q` (busca em nome/email) |
+| GET | `/usuarios/<id>` | próprio ou professor | — |
+| PUT | `/usuarios/<id>` | próprio ou professor | body `{nome?, email?, data_nascimento?, papel?}` — só professor muda papel |
+| DELETE | `/usuarios/<id>` | professor (não próprio) | protege CANNOT_DELETE_SELF |
 | GET | `/aulas` | público | query: `page, per_page, data_inicio, data_fim, professor_id, com_vagas` |
 | POST | `/aulas` | professor | body `{descricao, data, horario "HH:MM", duracao_min, vagas}` |
 | GET | `/aulas/<id>` | público | — |
@@ -259,9 +271,9 @@ inscrito_em
 | GET | `/noticias/<id>` | público | retorna `conteudo` completo |
 | POST/PUT/DELETE | `/noticias[/<id>]` | professor | body `{titulo, conteudo, imagem?}` |
 | GET | `/doacoes` | professor | filtro: `forma_pagamento` + resumo |
-| POST | `/doacoes` | público | body `{nome_doador, valor, forma_pagamento}`. Rate limit 10/min |
+| POST | `/doacoes` | público | body `{nome_doador, valor, forma_pagamento}`. Rate 10/min |
 | GET | `/voluntarios` | professor | filtro: `status` |
-| POST | `/voluntarios` | público | body `{nome, email, mensagem}`. Rate limit 3/min |
+| POST | `/voluntarios` | público | body `{nome, email, mensagem}`. Rate 3/min |
 | PATCH | `/voluntarios/<id>/status` | professor | body `{status}` |
 | GET | `/relatorios/inscricoes.pdf` | professor | retorna PDF binário; filtros: `data_inicio, data_fim, professor_id` |
 
@@ -290,11 +302,17 @@ Frontend chama `GET /noticias/<id>` ao abrir modal de leitura ou edição.
 }
 ```
 
+### Usuários — schemas
+- **UsuarioResponseSchema**: id, nome, email, data_nascimento, papel, criado_em
+- **RegisterSchema**: nome(3-100), email, senha(min 8, 1 letra + 1 número), data_nascimento (idade ≥ 14), papel
+- **UsuarioUpdateSchema**: todos opcionais, mesmas validações. **Senha fora do escopo** (precisa endpoint próprio futuramente)
+
 ### Validações (Marshmallow)
 - **Notícias:** titulo 5-200, conteudo min 20, imagem opcional max 255
 - **Voluntários:** nome min 3, email válido, mensagem min 20
 - **Doações:** valor > 0, forma_pagamento in ['pix','transferencia','paypal']
 - **Aulas:** descricao min 3, data futura ao criar
+- **Usuários:** idade mínima 14 anos, senha com letra + número
 
 ---
 
@@ -306,9 +324,10 @@ Frontend chama `GET /noticias/<id>` ao abrir modal de leitura ou edição.
 - Decorators: `@aluno_required`, `@professor_required` em `utils/decorators.py`
 - Helper de paginação em `utils/pagination.py`
 - Validação sempre com Marshmallow, erro 400 com `details`
-- Rate limits em rotas públicas sensíveis (doações 10/min, voluntários 3/min)
+- Rate limits em rotas públicas sensíveis (doações 10/min, voluntários 3/min, register 3/min)
 - Busca textual em listagens: `query.filter(Model.campo.ilike(f"%{q}%"))` com param `q`
 - Recursos com conteúdo longo: dois schemas separados (`ListSchema` + `DetailSchema`)
+- Proteções de integridade: CANNOT_DELETE_SELF em `/usuarios`, verificação de email único em PUT
 
 ### Frontend
 - Páginas em `src/pages/<Nome>.jsx` (arquivo único; componentes auxiliares inline)
@@ -317,7 +336,7 @@ Frontend chama `GET /noticias/<id>` ao abrir modal de leitura ou edição.
 - Estado local com `useState` + `useEffect`; nada de Redux/Zustand
 - Autenticação via `useAuth()` do `AuthContext`
 - Loading/erro/vazio sempre tratados em páginas de lista
-- Feedback via `<Snackbar>` do MUI
+- Feedback via `<Snackbar>` do MUI ou `<Alert>` inline
 - Confirmação de ação destrutiva via `<Dialog>`
 - Erros amigáveis com helper `extrairMensagemErro(data)`
 - Validação visual: campos com `error={}` e `helperText` com contagem
@@ -325,19 +344,47 @@ Frontend chama `GET /noticias/<id>` ao abrir modal de leitura ou edição.
 - Recursos com conteúdo longo: modal de leitura faz `GET /recurso/<id>` quando abre
 - PDF: `responseType: "blob"` + `window.open(URL.createObjectURL)`
 
-### Identidade visual (seção nova — convenções do PHP)
+### Padrão de wrapper de página admin (bate com Voluntarios, Usuarios)
+```jsx
+<Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, px: { xs: 2, sm: 3 } }}>
+  <Box className="flex items-center gap-2 mb-4">
+    <IconeDaPagina color="primary" sx={{ fontSize: 36 }} />
+    <Typography variant="h4" color="primary" fontWeight="bold">
+      Título da página
+    </Typography>
+  </Box>
+  {/* conteúdo */}
+</Container>
+```
+
+### Validação client-side em TODOS os formulários
+Para evitar o tooltip HTML5 feio ("Preencha este campo"), todo form público/privado deve ter:
+1. `noValidate` no `<Box component="form">`
+2. Função `validarLocal()` que retorna `true/false` e preenche `erroCampos`
+3. `handleSubmit` chama `validarLocal()` antes do POST
+4. TextFields com `error={!!erroCampos.campo}` e `helperText={erroCampos.campo}`
+5. Bônus UX: `onChange` limpa o erro do próprio campo (sensação de "estou corrigindo")
+
+Ver `Login.jsx` e `Cadastro.jsx` como referência.
+
+### O projeto mistura MUI + Tailwind
+Alguns componentes usam `className="flex items-center gap-2"` (Tailwind) ao invés de `sx={{ display: "flex", alignItems: "center", gap: 1 }}` (MUI). Ambos funcionam. Ao copiar padrões de uma página pra outra, respeite a convenção já adotada naquele componente.
+
+### Identidade visual (convenções do PHP)
 - **Padronagem amarela** (pattern-amarelo.jpg) sempre **acima** do header e invertida no rodapé
 - **Logos pretas → brancas:** usar `filter: "brightness(0) invert(1)"` em fundos escuros
 - **Mascote Zoé:** balão de fala só ao hover (não permanente), animação `float 4s ease-in-out infinite`
 - **Seções com fundo azul:** gradient `linear-gradient(135deg, #19629E 0%, #1F7AC4 100%)` + overlay de pattern com opacity 0.08-0.1
 - **Cards tipo PHP:** borderRadius 12, hover `translateY(-4px)` + shadow azul `rgba(29,113,184,0.15-0.2)`
 - **Botões primários:** bordaTop colorida (amarelo em cards azuis, azul em cards brancos) pra destacar
-- **Ícones em círculos coloridos:** quando quiser destacar um ícone grande, colocar dentro de `Box` 90x90 circular (border-radius 50%) com bgcolor contrastante
+- **Ícones em círculos coloridos:** `Box` 90x90 (ou menor) circular (border-radius 50%) com bgcolor contrastante
+- **Navbar admin:** branca + `borderBottom: "4px solid #F9B233"` + logo horizontal + pill azul-claro com avatar + chip de papel + botão Sair amarelo
+- **Login/Cadastro split-screen:** coluna esquerda com gradient azul + pattern-hexagonal + mascote animado + título branco; direita form branco
 
 ### Mobile-first
 - Páginas listagem: `<Grid size={{ xs: 12, sm: 6, md: 4 }}>`
 - Navbar interna (autenticada): `useMediaQuery(theme.breakpoints.down("md"))` pra Drawer hamburger
-- **Landing publica**: também tem Drawer hamburger no mobile (em `components/HeaderLanding.jsx`)
+- Landing publica: também tem Drawer hamburger no mobile (em `components/HeaderLanding.jsx`)
 - `<Container maxWidth="lg" sx={{ py: { xs: 2, md: 4 }, px: { xs: 2, sm: 3 } }}>` padrão
 - `<Stack direction={{ xs: "column", sm: "row" }}>` para formulários
 
@@ -361,11 +408,24 @@ Mudanças exigem **reiniciar o Flask**.
 - ❌ `<Grid item xs={12} sm={6}>` → ✅ `<Grid size={{ xs: 12, sm: 6 }}>`
 
 ### Props responsivas (alignItems, textAlign, justifyContent) vão em `sx`
-Quando usam objeto responsivo `{xs:..., md:...}`, NUNCA como prop direta.
 - ❌ `<Stack alignItems={{ xs: "flex-start", md: "center" }}>` (gera warning no console)
 - ✅ `<Stack sx={{ alignItems: { xs: "flex-start", md: "center" } }}>`
-- ❌ `<Box textAlign="center">` com sx responsivo quebra também
-- ✅ `<Box sx={{ textAlign: "center" }}>`
+
+### `alignItems` como prop direta em Stack/Grid vaza pro DOM (MESMO não-responsivo!)
+Em versões recentes do MUI v6+, `alignItems="center"` como prop direta em `<Stack>` ou `<Grid container>` vaza como atributo HTML e gera warning React. **Sempre dentro de `sx`**, mesmo quando é valor fixo:
+- ❌ `<Stack direction="row" alignItems="center">`
+- ❌ `<Grid container alignItems="center">`
+- ✅ `<Stack direction="row" sx={{ alignItems: "center" }}>`
+- ✅ `<Grid container sx={{ alignItems: "center" }}>`
+
+### `<Chip>` / `<Box>` dentro de `<Typography>` quebra HTML
+`<Typography>` renderiza como `<p>` por padrão. HTML não permite `<div>` (que Chip, Box, Card viram) dentro de `<p>`. Dispara "hydration error" e warnings `<div> cannot be a descendant of <p>`.
+
+Soluções:
+- Tirar o `<Chip>` pra fora do Typography e colocar no Stack junto
+- OU: `<Typography component="span" ...>` pra virar inline (mas perde margens de parágrafo)
+
+Nota: `<svg>` (ícones MUI) são inline e PODEM ficar dentro de Typography sem problema.
 
 ### Títulos em branco sobre fundo azul precisam de `!important`
 Usar `sx={{ color: "#ffffff !important" }}` porque o tema MUI sobrescreve `color="white"` em variants como `h1`, `h2`.
@@ -408,26 +468,54 @@ Após logout, redireciona para `/`.
 ### Endpoint de inscrição em aula
 É `POST /inscricoes` com body `{aula_id}`, NÃO `POST /aulas/<id>/inscricoes` (esse retorna 405).
 
-### Backend NÃO tem CRUD de usuários ainda
-Tem só `/auth/register`, `/auth/login`, `/auth/refresh`, `/auth/logout`, `/auth/me`.
-Pra CRUD administrativo de usuários, precisa criar `routes/usuarios.py` com
-`GET /usuarios` (professor), `PUT /usuarios/<id>`, `DELETE /usuarios/<id>`.
+### Leaflet com Vite — ícones padrão quebrados
+Se usar `<Marker>` sem `icon` custom, aparece quadrado quebrado no lugar do marcador. Fix:
+```jsx
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
+import markerIcon from "leaflet/dist/images/marker-icon.png";
+import markerShadow from "leaflet/dist/images/marker-shadow.png";
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({ iconRetinaUrl: markerIcon2x, iconUrl: markerIcon, shadowUrl: markerShadow });
+```
+
+Se usar `L.divIcon` custom, **não precisa** desse fix (é o caso do `MapaLocalizacao.jsx`).
+
+### Limitar zoom/pan do Leaflet (evita ver planeta duplicado)
+```jsx
+<MapContainer
+  minZoom={11}
+  maxZoom={19}
+  maxBounds={LIMITES}       // [[swLat, swLng], [neLat, neLng]]
+  maxBoundsViscosity={1.0}  // trava elástica imediata
+  worldCopyJump={false}
+>
+  <TileLayer noWrap={true} ... />
+</MapContainer>
+```
+
+### Commitar antes de pausar sessão
+Refatorações grandes não-commitadas se misturam com o trabalho do dia seguinte e confundem o `git diff` (aconteceu com a refatoração do Navbar entre 2026-11-20 e 2026-11-21: a refatoração visual apareceu misturada com o patch de adicionar link "Usuários"). **Sempre fazer `git status` + commit antes de pausar.**
+
+### Testes manuais da API: nunca assumir IDs do seed
+Os IDs reais do banco podem diferir dos IDs do seed SQL. Sempre fazer `GET /recurso` e usar o ID retornado antes de `PUT /recurso/<id>` ou `DELETE /recurso/<id>`. Já aconteceu de usar ID errado e editar/deletar o usuário errado (Carlos virou "Maria Silva Costa" por uns minutos).
 
 ---
 
-## 11. Estado atual do projeto (snapshot 2026-11-20)
+## 11. Estado atual do projeto (snapshot 2026-11-21)
 
 ### Backend
-- ✅ 8 blueprints implementados e manualmente testados
+- ✅ 9 blueprints implementados e manualmente testados
+- ✅ `/usuarios` CRUD administrativo (GET lista, GET detalhe, PUT, DELETE) com proteção CANNOT_DELETE_SELF
 - ✅ Health check em `/api/v1/health`
 - ✅ OpenAPI em `/apidocs` (via flasgger)
 - ✅ Filtro `q` (busca por título) em `/noticias`
-- ⬜ Blueprint `/usuarios` (CRUD administrativo — próxima etapa)
 - ⬜ Deploy no Render.com
 - ⬜ Migração para PostgreSQL em produção
 
 ### Frontend — Funcionalidade
-- ✅ Setup completo (Vite + React + Tailwind + MUI)
+- ✅ Setup completo (Vite + React + Tailwind + MUI + Leaflet)
 - ✅ Autenticação completa com rotas protegidas
 - ✅ Navbar interna mobile-first com Drawer
 - ✅ **Página Aulas completa**
@@ -435,7 +523,9 @@ Pra CRUD administrativo de usuários, precisa criar `routes/usuarios.py` com
 - ✅ **Página Doações completa**
 - ✅ **Página Voluntários completa**
 - ✅ **Página Relatório PDF** (abre em nova aba)
-- ✅ **Landing pública completa**
+- ✅ **Página Cadastro público** (split-screen, validação client-side, grid 2 colunas)
+- ✅ **Página Usuários admin** (filtros, busca, modal edição, dialog exclusão, proteção CANNOT_DELETE_SELF visual)
+- ✅ **Landing pública completa com Leaflet**
 - ⬜ Deploy no Vercel
 
 ### Frontend — Identidade visual do PHP
@@ -445,10 +535,12 @@ Pra CRUD administrativo de usuários, precisa criar `routes/usuarios.py` com
 - ✅ Customizações MuiButton/MuiCard/MuiOutlinedInput
 - ✅ **Landing refeita** com visual PHP (hero + Zoé + notícias fixas + acessibilidade + doação/voluntário com personalidade + onde estamos)
 - ✅ Header com 7 links + Drawer hamburger no mobile
-- ⬜ **Login** split-screen com mascote (próximo)
-- ⬜ **Navbar admin** (branca + linha amarela + avatar + Sair amarelo)
-- ⬜ Páginas internas com visual PHP
-- ⬜ Leaflet (mapa real em "Onde estamos")
+- ✅ **Login split-screen** (esquerda azul + Zoé animada + logo branca + "Bem-vindo de volta!"; direita form branco)
+- ✅ **Cadastro split-screen** (mesmo padrão; grid 2 colunas: Email+Data, Senha+Confirmar)
+- ✅ **Navbar admin** (branca + border-bottom amarelo 4px + logo horizontal + pill azul-claro com avatar + chip de papel + Sair amarelo)
+- ✅ **Validação client-side uniforme** (Login + Cadastro) — adeus tooltip HTML5
+- ✅ **Leaflet** (mapa real em "Onde estamos" da landing — Clube Nipo Brasileiro no SCES Sul, ícone customizado FBVA, zoom/pan limitados a Brasília)
+- ⬜ Páginas internas (dashboard, listas) com visual PHP mais enfático
 - ⬜ VLibras + widget de acessibilidade (A+/A-/contraste)
 
 ### Infraestrutura
@@ -472,7 +564,8 @@ Pra CRUD administrativo de usuários, precisa criar `routes/usuarios.py` com
 ## 13. Template de página (copie para criar novas)
 
 Para novas páginas de listagem, siga o padrão de `Aulas.jsx` (CRUD completo),
-`Noticias.jsx` (lista + conteúdo longo) ou `Doacoes.jsx` (listagem simples com resumo).
+`Noticias.jsx` (lista + conteúdo longo), `Doacoes.jsx` (listagem simples com resumo),
+ou `Usuarios.jsx` (lista com filtros + modal edição + dialog exclusão).
 
 ### Checklist mínimo
 1. `useState` para `data`, `loading`, `erro`, `meta`, `filtros`, `filtrosAplicados`
@@ -486,7 +579,7 @@ Para novas páginas de listagem, siga o padrão de `Aulas.jsx` (CRUD completo),
 9. Dialog de confirmação de delete
 10. Snackbar para feedback
 11. Botões de criar só para professor (verificar `usuario.papel`)
-12. Edit/delete só para o dono do recurso
+12. Edit/delete só para o dono do recurso (ou proteção equivalente no backend)
 13. Para conteúdo longo: `GET /recurso/<id>` ao abrir modal
 
 ### Helper padrão para erros amigáveis
@@ -508,16 +601,17 @@ function extrairMensagemErro(data) {
 
 ## 14. Próximos passos planejados (ordem Y — prioridade visual)
 
-1. 🔑 **Login split-screen** (esquerda azul com mascote + logo branca, direita form)
-2. 🎛️ **Navbar admin estilo PHP** (branca + border-bottom amarelo 4px + avatar colorido + Sair amarelo)
-3. 👥 **Backend `routes/usuarios.py`** (GET/PUT/DELETE — admin)
-4. ➕ **Página /cadastro pública** (Nome, Email, Nasc, Perfil [Aluno/Professor], Senha, Confirmar)
-5. 📋 **Página /usuarios admin** (lista com filtro por perfil)
-6. 🗺️ **Leaflet** (mapa real em "Onde estamos" da landing)
-7. ♿ **VLibras + widget acessibilidade** (A+/A-/contraste lateral direita)
-8. 🚀 Deploy backend Render + frontend Vercel
-9. GitHub Actions para lint + testes
+- ✅ ~~Login split-screen~~
+- ✅ ~~Navbar admin estilo PHP~~
+- ✅ ~~Backend `routes/usuarios.py`~~
+- ✅ ~~Página /cadastro pública~~
+- ✅ ~~Página /usuarios admin~~
+- ✅ ~~Leaflet (mapa real em "Onde estamos")~~
+- ♿ **VLibras + widget acessibilidade** (A+/A-/contraste lateral direita) — PRÓXIMO
+- 🚀 Deploy backend Render + frontend Vercel
+- GitHub Actions para lint + testes
+- Páginas internas (dashboard, listas) com visual PHP mais enfático
 
 ---
 
-_Última atualização: 2026-11-20 — Landing com visual PHP concluída; próxima etapa é Login split-screen._
+_Última atualização: 2026-11-21 — Etapas 5–8 (Y) concluídas (CRUD usuários + cadastro público + Leaflet). Próxima: VLibras + widget acessibilidade._

@@ -19,6 +19,7 @@ import KeyboardIcon from "@mui/icons-material/Keyboard";
 import SailingIcon from "@mui/icons-material/Sailing";
 import { Link, useLocation } from "react-router-dom";
 import HeaderLanding from "../components/HeaderLanding";
+import MapaLocalizacao from "../components/MapaLocalizacao";
 import api from "../services/api";
 
 const IMG = "/assets/img";
@@ -748,20 +749,7 @@ function OndeEstamosSection() {
         </Box>
         <Grid container spacing={4} sx={{ alignItems: "stretch" }}>
           <Grid size={{ xs: 12, md: 7 }}>
-            <Box sx={{
-              height: { xs: 300, md: 400 },
-              bgcolor: "#E8F3FB",
-              borderRadius: 2,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              border: "2px dashed #1D71B8",
-            }}>
-              <Stack sx={{ alignItems: "center" }} spacing={1}>
-                <LocationOnIcon color="primary" sx={{ fontSize: 60 }} />
-                <Typography color="primary" fontWeight="bold">
-                  Mapa interativo em breve (Leaflet)
-                </Typography>
-              </Stack>
-            </Box>
+            <MapaLocalizacao />
           </Grid>
           <Grid size={{ xs: 12, md: 5 }}>
             <Card elevation={2} sx={{ bgcolor: "#E8F3FB", height: "100%" }}>
