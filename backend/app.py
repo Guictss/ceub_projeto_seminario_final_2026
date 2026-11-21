@@ -31,6 +31,7 @@ def create_app(config_name: str | None = None) -> Flask:
     from routes.doacoes import doacoes_bp 
     from routes.voluntarios import voluntarios_bp
     from routes.relatorios import relatorios_bp
+    from routes.usuarios import usuarios_bp
 
     api = app.config["API_PREFIX"]
     app.register_blueprint(auth_bp, url_prefix=f"{api}/auth")
@@ -41,6 +42,7 @@ def create_app(config_name: str | None = None) -> Flask:
     app.register_blueprint(doacoes_bp, url_prefix=f"{api}/doacoes")
     app.register_blueprint(voluntarios_bp, url_prefix=f"{api}/voluntarios")
     app.register_blueprint(relatorios_bp, url_prefix=f"{api}/relatorios")
+    app.register_blueprint(usuarios_bp, url_prefix="/api/v1/usuarios")
 
     # Conecta o verificador de blocklist ao JWTManager
     jwt.token_in_blocklist_loader(check_if_token_revoked)

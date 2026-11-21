@@ -5,12 +5,14 @@ import ProfessorRoute from "./components/ProfessorRoute";
 
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
+import Cadastro from "./pages/Cadastro";
 import Dashboard from "./pages/Dashboard";
 import Aulas from "./pages/Aulas";
 import Noticias from "./pages/Noticias";
 import Doacoes from "./pages/Doacoes";
 import Voluntarios from "./pages/Voluntarios";
-import Relatorio from "./pages/Relatorio";
+import Usuarios from "./pages/Usuarios";
+import Relatorio from "./pages/Relatorio"; 
 
 function App() {
   return (
@@ -18,6 +20,7 @@ function App() {
       {/* Rotas publicas */}
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/cadastro" element={<Cadastro />} />
 
       {/* Rotas privadas (envolvidas em Layout com Navbar) */}
       <Route
@@ -37,6 +40,10 @@ function App() {
         <Route
           path="/voluntarios"
           element={<ProfessorRoute><Voluntarios /></ProfessorRoute>}
+        />
+        <Route
+          path="/usuarios"
+          element={<ProfessorRoute><Usuarios /></ProfessorRoute>}
         />
         <Route
           path="/relatorio"

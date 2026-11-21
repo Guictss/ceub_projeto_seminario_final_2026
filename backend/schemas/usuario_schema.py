@@ -62,3 +62,28 @@ class UsuarioResponseSchema(Schema):
     papel = fields.String()
     data_nascimento = fields.Date()
     criado_em = fields.DateTime(format="iso")
+
+class UsuarioUpdateSchema(Schema):
+    nome = fields.String(
+        validate=validate.Length(min=3, max=100, error="Nome deve ter entre 3 e 100 caracteres"),
+    )
+    email = fields.Email(
+        error_messages={"invalid": "E-mail inválido"},
+    )
+    data_nascimento = fields.Date(
+        error_messages={"invalid": "Data inválida (use formato YYYY-MM-DD)"},
+    )
+    papel = fields.String(
+        validate=validate.OneOf(["aluno", "professor"],
+                                error="Papel deve ser aluno ou professor"),
+    )
+
+    @validates("data_nascimento")
+    def valida_idade(self, value, **kwargs):
+        """Valida idade mínima de 14 anos e data não futura."""
+        hoje = date.today()
+        if value > hoje:
+            raise ValidationError("Data de nascimento não pode ser no futuro")
+        idade = relativedelta(hoje, value).years
+        if idade < 14:
+            raise ValidationError("Idade mínima é 14 anos")
