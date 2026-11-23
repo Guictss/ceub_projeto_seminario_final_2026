@@ -1,7 +1,9 @@
-﻿"""Blueprint de autenticação — /api/v1/auth/*"""
+"""Blueprint de autenticação — /api/v1/auth/*"""
+from datetime import timedelta
+
 from flask import Blueprint, request, jsonify, current_app
 from flask_jwt_extended import (
-    create_access_token, create_refresh_token,
+    create_access_token, create_refresh_token, decode_token,
     jwt_required, get_jwt_identity, get_jwt
 )
 from marshmallow import ValidationError
@@ -9,7 +11,8 @@ from marshmallow import ValidationError
 from extensions import db, limiter
 from models import Usuario
 from schemas.usuario_schema import (
-    RegisterSchema, LoginSchema, UsuarioResponseSchema
+    RegisterSchema, LoginSchema, UsuarioResponseSchema,
+    EsqueciSenhaSchema, RedefinirSenhaSchema,
 )
 
 auth_bp = Blueprint("auth", __name__)
@@ -134,3 +137,101 @@ def me():
     if not usuario:
         return jsonify({"error": "Usuário não encontrado", "code": "RESOURCE_NOT_FOUND"}), 404
     return jsonify(UsuarioResponseSchema().dump(usuario)), 200
+
+
+# ── POST /auth/esqueci-senha ───────────────────────────────────────────────
+@auth_bp.route("/esqueci-senha", methods=["POST"])
+@limiter.limit("3 per minute")
+def esqueci_senha():
+    """Gera um token de reset de senha válido por 1h.
+
+    Sempre retorna 200 com mensagem genérica para evitar enumeração de usuários
+    (não revela se o e-mail existe no sistema). Em desenvolvimento, imprime o
+    token no log do backend para permitir o teste. Em produção, deve enviar
+    por e-mail.
+    """
+    try:
+        data = EsqueciSenhaSchema().load(request.get_json() or {})
+    except ValidationError as err:
+        return _validation_error(err.messages)
+
+    email = data["email"].lower().strip()
+    usuario = Usuario.query.filter_by(email=email).first()
+
+    if usuario:
+        # Gera token JWT com claim 'type' distinto pra não ser confundido com access token
+        reset_token = create_access_token(
+            identity=str(usuario.id),
+            additional_claims={"type": "password_reset"},
+            expires_delta=timedelta(hours=1),
+        )
+
+        # LOG DE DESENVOLVIMENTO — em produção, substituir por envio de e-mail
+        current_app.logger.info(
+            f"\n{'=' * 70}\n"
+            f"RESET DE SENHA SOLICITADO\n"
+            f"  E-mail: {email}\n"
+            f"  Usuário: {usuario.nome} (id={usuario.id})\n"
+            f"  Link de reset (válido por 1h):\n"
+            f"    http://localhost:5173/redefinir-senha?token={reset_token}\n"
+            f"{'=' * 70}\n"
+        )
+
+    # Resposta GENÉRICA — não revela se o e-mail existe
+    return jsonify({
+        "message": "Se o e-mail estiver cadastrado, enviaremos instruções "
+                   "de redefinição de senha em instantes."
+    }), 200
+
+
+# ── POST /auth/redefinir-senha ─────────────────────────────────────────────
+@auth_bp.route("/redefinir-senha", methods=["POST"])
+@limiter.limit("5 per minute")
+def redefinir_senha():
+    """Redefine a senha usando o token gerado em /esqueci-senha."""
+    try:
+        data = RedefinirSenhaSchema().load(request.get_json() or {})
+    except ValidationError as err:
+        return _validation_error(err.messages)
+
+    # Tenta decodificar o token
+    try:
+        payload = decode_token(data["token"])
+    except Exception:
+        return jsonify({
+            "error": "Token inválido ou expirado. Solicite um novo link de redefinição.",
+            "code": "TOKEN_INVALID",
+        }), 400
+
+    # Garante que é um token do tipo password_reset (não um access token roubado)
+    if payload.get("type") != "password_reset":
+        return jsonify({
+            "error": "Token inválido para redefinição de senha.",
+            "code": "TOKEN_WRONG_TYPE",
+        }), 400
+
+    user_id = payload.get("sub")
+    if not user_id:
+        return jsonify({
+            "error": "Token malformado.",
+            "code": "TOKEN_MALFORMED",
+        }), 400
+
+    usuario = Usuario.query.get(int(user_id))
+    if not usuario:
+        return jsonify({
+            "error": "Usuário não encontrado.",
+            "code": "USER_NOT_FOUND",
+        }), 404
+
+    # Atualiza a senha
+    usuario.set_senha(data["nova_senha"])
+    db.session.commit()
+
+    current_app.logger.info(
+        f"Senha redefinida com sucesso para {usuario.email} (id={usuario.id})"
+    )
+
+    return jsonify({
+        "message": "Senha redefinida com sucesso. Faça login com a nova senha.",
+    }), 200

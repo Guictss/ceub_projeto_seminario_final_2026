@@ -252,6 +252,22 @@ export default function Login() {
                 required fullWidth
                 placeholder="********"
               />
+
+              <Box sx={{ mt: -1.5, textAlign: "right" }}>
+                <MuiLink
+                  component={Link}
+                  to="/esqueci-senha"
+                  sx={{
+                    fontSize: "0.85rem",
+                    color: "primary.main",
+                    textDecoration: "none",
+                    "&:hover": { textDecoration: "underline" },
+                  }}
+                >
+                  Esqueci minha senha
+                </MuiLink>
+              </Box>
+
               <Button
                 type="submit"
                 variant="contained"
