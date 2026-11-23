@@ -16,10 +16,10 @@ projeto *Vela Para Todos*. Monorepo com **API REST em Flask** e **SPA em React**
 **Repo:** https://github.com/Guictss/ceub_projeto_seminario_final_2026
 **Caminho local:** `C:\dev\a3-vela\`
 
-**Status (2026-11-21):** adaptação da identidade visual PHP **CONCLUÍDA**.
-Login split-screen, Navbar admin, Cadastro público, CRUD de Usuários (backend + frontend)
-e Leaflet (mapa real na landing com ícone customizado) prontos.
-**Em andamento:** VLibras + widget de acessibilidade; depois deploy.
+**Status (2026-11-23):** **toda a parte visual/UX concluída**.
+Identidade visual PHP (Login/Navbar/Cadastro/Usuarios), Leaflet (mapa real) e
+acessibilidade (VLibras oficial + widget custom A+/A-/contraste com persistência) prontos.
+**Em andamento:** deploy (Render backend + Vercel frontend) e GitHub Actions.
 
 ---
 
@@ -111,7 +111,7 @@ C:\dev\a3-vela\
 │   │   ├── main.jsx        # Tema MUI com paleta FBVA completa + customizações
 │   │   ├── App.jsx         # Routes (incluindo /cadastro e /usuarios)
 │   │   ├── pages/          # Landing, Login, Cadastro, Dashboard, Aulas, Noticias, Doacoes, Voluntarios, Usuarios, Relatorio
-│   │   ├── components/     # Layout, Navbar (visual PHP), PrivateRoute, ProfessorRoute, HeaderLanding, MapaLocalizacao
+│   │   ├── components/     # Layout, Navbar (visual PHP), PrivateRoute, ProfessorRoute, HeaderLanding, MapaLocalizacao, WidgetAcessibilidade
 │   │   ├── contexts/       # AuthContext
 │   │   ├── services/api.js
 │   │   ├── index.css
@@ -501,6 +501,35 @@ Refatorações grandes não-commitadas se misturam com o trabalho do dia seguint
 ### Testes manuais da API: nunca assumir IDs do seed
 Os IDs reais do banco podem diferir dos IDs do seed SQL. Sempre fazer `GET /recurso` e usar o ID retornado antes de `PUT /recurso/<id>` ou `DELETE /recurso/<id>`. Já aconteceu de usar ID errado e editar/deletar o usuário errado (Carlos virou "Maria Silva Costa" por uns minutos).
 
+### Hidratar estado do localStorage: use lazy initial state (não useEffect)
+Em React 18+ com **StrictMode**, usar `useEffect` pra carregar valores salvos combinado com outro `useEffect` pra persistir causa **sobrescrita na segunda montagem**. O StrictMode monta o componente 2x pra detectar bugs; no segundo mount, o estado reinicia aos padrões, e o useEffect de persistência salva ESSES padrões no localStorage ANTES do useEffect de carga ler os valores reais. Solução correta — **lazy initial state**:
+
+```jsx
+// ❌ ERRADO: perde dados no StrictMode
+const [valor, setValor] = useState(PADRAO);
+useEffect(() => { setValor(JSON.parse(localStorage.getItem(KEY) || "{}")); }, []);
+useEffect(() => { localStorage.setItem(KEY, JSON.stringify(valor)); }, [valor]);
+
+// ✅ CERTO: estado nasce já hidratado
+const [valor, setValor] = useState(() => {
+  try { return JSON.parse(localStorage.getItem(KEY) || "{}"); } catch { return PADRAO; }
+});
+useEffect(() => { localStorage.setItem(KEY, JSON.stringify(valor)); }, [valor]);
+```
+
+Caso real: aconteceu no `WidgetAcessibilidade.jsx` — fonte aumentada e alto contraste voltavam ao padrão a cada F5.
+
+### VLibras tem warnings normais no console
+A integração oficial do VLibras (`https://vlibras.gov.br/app/vlibras-plugin.js`) **gera warnings normais** que NÃO são bugs nossos:
+- "An iframe which has both allow-scripts and allow-same-origin..."
+- "[Violation] Permissions policy violation: accelerometer is not allowed"
+- "The devicemotion events are blocked by permissions policy"
+
+São internos do VLibras (tenta usar acelerômetro/motion do dispositivo). **Não silenciar** — pode quebrar features do plugin.
+
+### `<html lang="en">` padrão do Vite deve virar `"pt-BR"`
+Template padrão do Vite cria o `index.html` com `lang="en"` e `<title>frontend</title>`. **Sempre trocar pra `pt-BR`** (screen readers e VLibras dependem disso) e colocar título real do projeto.
+
 ---
 
 ## 11. Estado atual do projeto (snapshot 2026-11-21)
@@ -540,8 +569,9 @@ Os IDs reais do banco podem diferir dos IDs do seed SQL. Sempre fazer `GET /recu
 - ✅ **Navbar admin** (branca + border-bottom amarelo 4px + logo horizontal + pill azul-claro com avatar + chip de papel + Sair amarelo)
 - ✅ **Validação client-side uniforme** (Login + Cadastro) — adeus tooltip HTML5
 - ✅ **Leaflet** (mapa real em "Onde estamos" da landing — Clube Nipo Brasileiro no SCES Sul, ícone customizado FBVA, zoom/pan limitados a Brasília)
+- ✅ **VLibras oficial do governo** (canto inferior direito, tradução para Libras)
+- ✅ **Widget customizado de acessibilidade** (FAB azul acima do VLibras com A+/A-/alto contraste/reset — persistência em localStorage via lazy initial state)
 - ⬜ Páginas internas (dashboard, listas) com visual PHP mais enfático
-- ⬜ VLibras + widget de acessibilidade (A+/A-/contraste)
 
 ### Infraestrutura
 - ✅ Repo no GitHub (`Guictss/ceub_projeto_seminario_final_2026`)
@@ -607,11 +637,11 @@ function extrairMensagemErro(data) {
 - ✅ ~~Página /cadastro pública~~
 - ✅ ~~Página /usuarios admin~~
 - ✅ ~~Leaflet (mapa real em "Onde estamos")~~
-- ♿ **VLibras + widget acessibilidade** (A+/A-/contraste lateral direita) — PRÓXIMO
-- 🚀 Deploy backend Render + frontend Vercel
+- ✅ ~~VLibras + widget acessibilidade~~
+- 🚀 **Deploy backend Render + frontend Vercel** — PRÓXIMO
 - GitHub Actions para lint + testes
 - Páginas internas (dashboard, listas) com visual PHP mais enfático
 
 ---
 
-_Última atualização: 2026-11-21 — Etapas 5–8 (Y) concluídas (CRUD usuários + cadastro público + Leaflet). Próxima: VLibras + widget acessibilidade._
+_Última atualização: 2026-11-23 — Etapa 9 (Y) concluída (VLibras + widget acessibilidade). **Toda a parte visual/UX do projeto está pronta.** Próxima: deploy no Render + Vercel._

@@ -4,3 +4,23 @@
 html, body, #root {
   height: 100%;
 }
+
+/* ═════════ Alto contraste (toggle do widget de acessibilidade) ═════════ */
+body.alto-contraste {
+  filter: invert(1) hue-rotate(180deg);
+  background: #fff; /* fundo branco invertido = preto */
+}
+
+body.alto-contraste img,
+body.alto-contraste video,
+body.alto-contraste iframe,
+body.alto-contraste [style*="background-image"] {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+/* Mantém o widget do VLibras legível no modo contraste */
+body.alto-contraste [vw],
+body.alto-contraste [vw-access-button],
+body.alto-contraste [vw-plugin-wrapper] {
+  filter: invert(1) hue-rotate(180deg);
+}
