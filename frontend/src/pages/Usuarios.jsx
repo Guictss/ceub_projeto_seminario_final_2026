@@ -290,7 +290,7 @@ export default function Usuarios() {
                         <Avatar
                           sx={{
                             bgcolor:
-                              u.papel === "professor" ? "#fde100" : "#662c92",
+                              u.papel === "professor" ? "#ec0089" : "#662c92",
                             color:
                               u.papel === "professor" ? "#323232" : "#ffffff",
                             width: 36,
@@ -323,7 +323,7 @@ export default function Usuarios() {
                         size="small"
                         sx={{
                           bgcolor:
-                            u.papel === "professor" ? "#fde100" : "#F3E6F7",
+                            u.papel === "professor" ? "#ec0089" : "#F3E6F7",
                           color:
                             u.papel === "professor" ? "#323232" : "#43054e",
                           fontWeight: 600,

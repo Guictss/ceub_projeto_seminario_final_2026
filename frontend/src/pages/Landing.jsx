@@ -82,7 +82,7 @@ function PatternAmarelo({ invertido }) {
     <Box
       sx={{
         height: { xs: 50, md: 80 },
-        backgroundImage: `url(${IMG}/pattern-amarelo.jpg)`,
+        backgroundImage: `url(${IMG}/pattern-amarelo-ceub.jpg)`,
         backgroundSize: { xs: "300px", md: "400px" },
         backgroundRepeat: "repeat-x",
         transform: invertido ? "rotate(180deg)" : "none",
@@ -108,7 +108,7 @@ function HeroSection() {
       <Box
         sx={{
           position: "absolute", inset: 0,
-          backgroundImage: `url(${IMG}/pattern-triangulos.jpg)`,
+          backgroundImage: `url(${IMG}/pattern-triangulos-ceub.jpg)`,
           backgroundSize: "600px",
           opacity: 0.08,
         }}
@@ -376,7 +376,7 @@ function NoticiasSection() {
     >
       <Box sx={{
         position: "absolute", inset: 0,
-        backgroundImage: `url(${IMG}/pattern-hexagonal.jpg)`,
+        backgroundImage: `url(${IMG}/pattern-hexagonal-ceub.jpg)`,
         backgroundSize: "500px",
         opacity: 0.1,
       }} />
@@ -542,7 +542,7 @@ function DoacaoSection({ onResult }) {
       {/* Padrão de fundo sutil */}
       <Box sx={{
         position: "absolute", inset: 0,
-        backgroundImage: `url(${IMG}/pattern-triangulos.jpg)`,
+        backgroundImage: `url(${IMG}/pattern-triangulos-ceub.jpg)`,
         backgroundSize: "600px",
         opacity: 0.06,
       }} />
@@ -818,7 +818,7 @@ function FooterLanding() {
         }}>
           <Box
             component="img"
-            src={`${IMG}/logo-horizontal.png`}
+            src={`${IMG}/logo-horizontal-ceub.png`}
             alt="Programa Vela Para Todos"
             sx={{
               height: { xs: 50, md: 70 },

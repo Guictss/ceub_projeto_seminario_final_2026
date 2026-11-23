@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import {
   AppBar, Box, Button, Container, Drawer, IconButton,
   List, ListItem, ListItemButton, ListItemText,
@@ -66,7 +66,7 @@ export default function HeaderLanding() {
             >
               <Box
                 component="img"
-                src={`${IMG}/logo-horizontal.png`}
+                src={`${IMG}/logo-horizontal-ceub.png`}
                 alt="Programa Vela Para Todos"
                 sx={{ height: { xs: 36, md: 50 } }}
               />

@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import {
   AppBar, Avatar, Box, Button, Chip, Container, Divider,
   Drawer, IconButton, List, ListItem, ListItemButton, ListItemText,
@@ -68,7 +68,7 @@ export default function Navbar() {
             >
               <Box
                 component="img"
-                src={`${IMG}/logo-horizontal.png`}
+                src={`${IMG}/logo-horizontal-ceub.png`}
                 alt="Vela Para Todos"
                 sx={{ height: 40 }}
               />
@@ -154,8 +154,8 @@ export default function Navbar() {
                         fontSize: "0.65rem",
                         fontWeight: "bold",
                         mt: 0.3,
-                        bgcolor: ehProfessor ? "secondary.main" : "primary.light",
-                        color: ehProfessor ? "black" : "white",
+                        bgcolor: ehProfessor ? "#ec0089" : "#662c92",
+                        color: "white",
                         "& .MuiChip-label": { px: 0.8 },
                       }}
                     />
@@ -229,8 +229,8 @@ export default function Navbar() {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>
               <Avatar sx={{
                 width: 40, height: 40,
-                bgcolor: "secondary.main",
-                color: "black",
+                bgcolor: "ec0089",
+                color: "white",
                 fontWeight: "bold",
               }}>
                 {inicial}

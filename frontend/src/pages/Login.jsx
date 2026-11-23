@@ -85,7 +85,7 @@ export default function Login() {
           {/* Padrão hexagonal com opacity baixa */}
           <Box sx={{
             position: "absolute", inset: 0,
-            backgroundImage: `url(${IMG}/pattern-hexagonal.jpg)`,
+            backgroundImage: `url(${IMG}/pattern-hexagonal-ceub.jpg)`,
             backgroundSize: "500px",
             opacity: 0.08,
           }} />
@@ -100,7 +100,7 @@ export default function Login() {
             {/* Logo branca */}
             <Box
               component="img"
-              src={`${IMG}/logo-horizontal.png`}
+              src={`${IMG}/logo-horizontal-ceub.png`}
               alt="Programa Vela Para Todos"
               sx={{
                 width: 220,
@@ -189,7 +189,7 @@ export default function Login() {
               <Box sx={{ textAlign: "center", mb: 4 }}>
                 <Box
                   component="img"
-                  src={`${IMG}/logo-horizontal.png`}
+                  src={`${IMG}/logo-horizontal-ceub.png`}
                   alt="Programa Vela Para Todos"
                   sx={{ width: 180 }}
                 />

@@ -135,7 +135,7 @@ export default function Cadastro() {
         sx={{
           position: "absolute",
           inset: 0,
-          backgroundImage: `url(${IMG}/pattern-hexagonal.jpg)`,
+          backgroundImage: `url(${IMG}/pattern-hexagonal-ceub.jpg)`,
           backgroundSize: "cover",
           opacity: 0.12,
           mixBlendMode: "overlay",
@@ -145,7 +145,7 @@ export default function Cadastro() {
       <Box sx={{ position: "relative", zIndex: 1, textAlign: "center" }}>
         <Box
           component="img"
-          src={`${IMG}/logo-vertical.png`}
+          src={`${IMG}/logo-vertical-ceub.png`}
           alt="FBVA"
           sx={{
             display: "block",
@@ -234,7 +234,7 @@ export default function Cadastro() {
         {isMobile && (
           <Box
             component="img"
-            src={`${IMG}/logo-horizontal.png`}
+            src={`${IMG}/logo-horizontal-ceub.png`}
             alt="FBVA"
             sx={{ display: "block", mx: "auto", height: 48, mb: 3 }}
           />

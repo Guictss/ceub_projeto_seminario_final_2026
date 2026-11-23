@@ -11,8 +11,8 @@ from reportlab.platypus import (
     Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 )
 
-AZUL_FBVA = colors.HexColor("#1D71B8")
-AMARELO_FBVA = colors.HexColor("#F9B233")
+AZUL_FBVA = colors.HexColor("#662c92")
+AMARELO_FBVA = colors.HexColor("#ec0089")
 CINZA_CLARO = colors.HexColor("#F2F2F2")
 CINZA_ESCURO = colors.HexColor("#4A4A4A")
 

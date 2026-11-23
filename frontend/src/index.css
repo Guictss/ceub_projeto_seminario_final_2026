@@ -24,21 +24,3 @@ body.alto-contraste [vw-access-button],
 body.alto-contraste [vw-plugin-wrapper] {
   filter: invert(1) hue-rotate(180deg);
 }
-
-/* ═════════ Branch apresentacao-ceub — gira azul→roxo nos assets ═════════
- * Aplica hue-rotate em logos e mascote para alinhar com paleta CEUB.
- * O hue-rotate gira TODAS as cores juntas:
- *   - azul FBVA (#1D71B8) → roxo (vira ~#5F2B9E)
- *   - amarelo FBVA (#F9B233) → verde-amarelado (fica meio esquisito mas aceitável)
- * Esse é o custo da "versão rápida" — pra ficar perfeito, recolorir no Photopea.
- */
-img[src*="logo-horizontal"],
-img[src*="logo-vertical"],
-{
-  filter: hue-rotate(67deg) saturate(1.15);
-}
-
-/* Patterns como backgroundImage em Box — aplicar classe no elemento pai */
-.ceub-pattern {
-  filter: hue-rotate(67deg) saturate(1.15);
-}
