@@ -1,9 +1,20 @@
-﻿"""Configurações da aplicação Flask por ambiente."""
+"""Configurações da aplicação Flask por ambiente."""
 import os
 from datetime import timedelta
 from dotenv import load_dotenv
 
 load_dotenv()
+
+
+def _normalizar_database_url(url: str) -> str:
+    """Normaliza a DATABASE_URL para o formato esperado pelo SQLAlchemy 2+.
+
+    Alguns provedores (ex: Render, Heroku) retornam a URL começando com
+    'postgres://', mas o SQLAlchemy 2+ só aceita 'postgresql://'.
+    """
+    if url and url.startswith("postgres://"):
+        return url.replace("postgres://", "postgresql://", 1)
+    return url
 
 
 class BaseConfig:
@@ -13,7 +24,9 @@ class BaseConfig:
     SECRET_KEY = os.getenv("SECRET_KEY", "dev-insecure-change-me")
 
     # SQLAlchemy
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL", "sqlite:///vela.db")
+    SQLALCHEMY_DATABASE_URI = _normalizar_database_url(
+        os.getenv("DATABASE_URL", "sqlite:///vela.db")
+    )
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,  # testa conexão antes de usar
@@ -60,7 +73,9 @@ class ProductionConfig(BaseConfig):
     # Em produção, estas variáveis DEVEM vir do ambiente
     SECRET_KEY = os.environ["SECRET_KEY"]
     JWT_SECRET_KEY = os.environ["JWT_SECRET_KEY"]
-    SQLALCHEMY_DATABASE_URI = os.environ["DATABASE_URL"]
+    SQLALCHEMY_DATABASE_URI = _normalizar_database_url(
+        os.environ["DATABASE_URL"]
+    )
 
 
 # Mapeamento usado pelo app.py para selecionar a config correta
