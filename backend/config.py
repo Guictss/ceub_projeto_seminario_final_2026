@@ -7,13 +7,16 @@ load_dotenv()
 
 
 def _normalizar_database_url(url: str) -> str:
-    """Normaliza a DATABASE_URL para o formato esperado pelo SQLAlchemy 2+.
-
-    Alguns provedores (ex: Render, Heroku) retornam a URL começando com
-    'postgres://', mas o SQLAlchemy 2+ só aceita 'postgresql://'.
-    """
-    if url and url.startswith("postgres://"):
-        return url.replace("postgres://", "postgresql://", 1)
+    """Normaliza a DATABASE_URL para o formato esperado pelo SQLAlchemy 2+."""
+    
+    if not url:
+        return url
+    # postgres:// → postgresql:// (Render/Heroku legacy)
+    if url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql://", 1)
+    # postgresql:// → postgresql+psycopg2:// (driver explícito)
+    if url.startswith("postgresql://") and "+psycopg" not in url:
+        url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
     return url
 
 
