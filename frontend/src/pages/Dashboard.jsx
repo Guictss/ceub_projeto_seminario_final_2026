@@ -79,7 +79,7 @@ function DashboardProfessor({ stats }) {
     "Total de vagas": a.vagas_total,
   }));
 
-  const CORES_PIZZA = ["#1D71B8", "#F9B233", "#19629E", "#1F7AC4"];
+  const CORES_PIZZA = ["#662c92", "#ec0089", "#43054e", "#bf0087"];
   const LABELS_FORMA = {
     pix: "Pix",
     transferencia: "Transferência",
@@ -98,25 +98,25 @@ function DashboardProfessor({ stats }) {
           icon={<SchoolIcon />}
           label="Minhas aulas"
           value={m.minhas_aulas}
-          color="#1D71B8"
+          color="#662c92"
         />
         <MetricCard
           icon={<HowToRegIcon />}
           label="Inscrições recebidas"
           value={m.total_inscricoes}
-          color="#1D71B8"
+          color="#662c92"
         />
         <MetricCard
           icon={<PeopleIcon />}
           label="Alunos únicos"
           value={m.alunos_unicos}
-          color="#1D71B8"
+          color="#662c92"
         />
         <MetricCard
           icon={<VolunteerActivismIcon />}
           label="Voluntários pendentes"
           value={m.voluntarios_pendentes}
-          color="#F9B233"
+          color="#ec0089"
           destaque={m.voluntarios_pendentes > 0}
         />
       </Grid>
@@ -151,8 +151,8 @@ function DashboardProfessor({ stats }) {
                       }}
                     />
                     <Legend />
-                    <Bar dataKey="Inscritos" fill="#1D71B8" radius={[4, 4, 0, 0]} />
-                    <Bar dataKey="Total de vagas" fill="#F9B233" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Inscritos" fill="#662c92" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="Total de vagas" fill="#ec0089" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               )}
@@ -178,7 +178,7 @@ function DashboardProfessor({ stats }) {
                   R$ {Number(m.doacoes_mes_valor).toFixed(2)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  em {m.doacoes_mes_count} doação{m.doacoes_mes_count === 1 ? "doação" : "doações"}
+                  em {m.doacoes_mes_count} {m.doacoes_mes_count === 1 ? "doação" : "doações"}
                 </Typography>
               </Box>
 
@@ -289,19 +289,19 @@ function DashboardAluno({ stats }) {
           icon={<EventIcon />}
           label="Minhas inscrições"
           value={m.minhas_inscricoes}
-          color="#1D71B8"
+          color="#662c92"
         />
         <MetricCard
           icon={<SchoolIcon />}
           label="Aulas com vagas"
           value={m.aulas_disponiveis}
-          color="#1D71B8"
+          color="#662c92"
         />
         <MetricCard
           icon={<ArticleIcon />}
           label="Notícias disponíveis"
           value={m.total_noticias}
-          color="#F9B233"
+          color="#ec0089"
         />
       </Grid>
 
@@ -391,7 +391,7 @@ function DashboardAluno({ stats }) {
 
 /* ─── Card de métrica reutilizável ──────────────────────────────────── */
 function MetricCard({ icon, label, value, color, destaque }) {
-  const corFinal = destaque ? "#F9B233" : color;
+  const corFinal = destaque ? "#ec0089" : color;
   return (
     <Grid size={{ xs: 12, sm: 6, md: 3 }}>
       <Card
