@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import {
   Alert, Box, Button, Container, Link as MuiLink,
   TextField, Typography, useMediaQuery, useTheme,
@@ -114,7 +114,7 @@ export default function Login() {
             {/* Mascote Zoé animando */}
             <Box
               component="img"
-              src={`${IMG}/mascote.png`}
+              src={`${IMG}/mascote-ceub.png`}
               alt="Zoé - mascote"
               sx={{
                 width: { md: 280, lg: 340 },

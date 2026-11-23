@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   AppBar, Alert, Box, Button, Card, CardContent, Chip, Container,
   FormControl, Grid, InputLabel, MenuItem, Select, Snackbar,
@@ -311,7 +311,7 @@ function MascoteZoe() {
 
               <Box
                 component="img"
-                src={`${IMG}/mascote.png`}
+                src={`${IMG}/mascote-ceub.png`}
                 alt="Zoé - mascote"
                 sx={{
                   width: { xs: 300, md: 480 },

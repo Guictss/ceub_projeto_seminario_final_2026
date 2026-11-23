@@ -1,4 +1,4 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import {
   Alert, Box, Button, Container, FormControl, Grid, InputLabel,
   Link as MuiLink, MenuItem, Select, TextField, Typography,
@@ -158,7 +158,7 @@ export default function Cadastro() {
 
         <Box
           component="img"
-          src={`${IMG}/mascote.png`}
+          src={`${IMG}/mascote-ceub.png`}
           alt="Zoé mascote"
           sx={{
             display: "block",

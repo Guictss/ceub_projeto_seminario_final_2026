@@ -34,7 +34,7 @@ body.alto-contraste [vw-plugin-wrapper] {
  */
 img[src*="logo-horizontal"],
 img[src*="logo-vertical"],
-img[src*="mascote"] {
+{
   filter: hue-rotate(67deg) saturate(1.15);
 }
 

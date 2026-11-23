@@ -1,4 +1,4 @@
-﻿import { StrictMode } from "react";
+import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
@@ -15,12 +15,12 @@ import "./index.css";
 import App from "./App.jsx";
 import { AuthProvider } from "./contexts/AuthContext";
 
-// ═══════════════════════════════════════════════════════════════════════
-// BRANCH apresentacao-ceub — paleta oficial do CEUB no lugar do FBVA
-// Para voltar à paleta FBVA: `git checkout main`
-// ═══════════════════════════════════════════════════════════════════════
+// -----------------------------------------------------------------------
+// BRANCH apresentacao-ceub � paleta oficial do CEUB no lugar do FBVA
+// Para voltar � paleta FBVA: `git checkout main`
+// -----------------------------------------------------------------------
 const ROXO        = "#662c92";   // antes: AZUL     #662c92
-const ROXO_MED    = "#bf0087";   // antes: AZUL_MED #bf0087 (lilás CEUB)
+const ROXO_MED    = "#bf0087";   // antes: AZUL_MED #bf0087 (lil�s CEUB)
 const ROXO_DARK   = "#43054e";   // antes: AZUL_DARK #43054e
 const AMARELO     = "#fde100";   // antes: AMARELO  #fde100 (amarelo CEUB)
 const MAGENTA     = "#ec0089";   // antes: AMARELO_D #ec0089 (acento quente)
@@ -49,7 +49,7 @@ const theme = createTheme({
       primary: DARK,
       secondary: GRAY,
     },
-    // Alias "vela" mantido para não quebrar refs existentes no código
+    // Alias "vela" mantido para n�o quebrar refs existentes no c�digo
     vela: {
       azul: ROXO,
       azulMed: ROXO_MED,
