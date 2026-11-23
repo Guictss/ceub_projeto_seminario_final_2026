@@ -178,7 +178,7 @@ function DashboardProfessor({ stats }) {
                   R$ {Number(m.doacoes_mes_valor).toFixed(2)}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  em {m.doacoes_mes_count} doação{m.doacoes_mes_count === 1 ? "doação" : "doações"}
+                  em {m.doacoes_mes_count} {m.doacoes_mes_count === 1 ? "doação" : "doações"}
                 </Typography>
               </Box>
 
