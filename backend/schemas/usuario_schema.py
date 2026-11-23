@@ -87,3 +87,27 @@ class UsuarioUpdateSchema(Schema):
         idade = relativedelta(hoje, value).years
         if idade < 14:
             raise ValidationError("Idade mínima é 14 anos")
+
+class EsqueciSenhaSchema(Schema):
+    """Valida a requisição de redefinição de senha."""
+    email = fields.Email(
+        required=True,
+        error_messages={"invalid": "E-mail inválido"},
+    )
+
+
+class RedefinirSenhaSchema(Schema):
+    """Valida a nova senha + token de reset."""
+    token = fields.String(required=True, load_only=True)
+    nova_senha = fields.String(
+        required=True,
+        validate=validate.Length(min=8, error="Senha deve ter no mínimo 8 caracteres"),
+        load_only=True,
+    )
+
+    @validates("nova_senha")
+    def valida_senha(self, value, **kwargs):
+        if not any(c.isalpha() for c in value):
+            raise ValidationError("Senha deve conter pelo menos uma letra")
+        if not any(c.isdigit() for c in value):
+            raise ValidationError("Senha deve conter pelo menos um número")

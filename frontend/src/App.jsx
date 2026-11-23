@@ -7,6 +7,8 @@ import WidgetAcessibilidade from "./components/WidgetAcessibilidade";  // ← NO
 import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Cadastro from "./pages/Cadastro";
+import EsqueciSenha from "./pages/EsqueciSenha";
+import RedefinirSenha from "./pages/RedefinirSenha";
 import Dashboard from "./pages/Dashboard";
 import Aulas from "./pages/Aulas";
 import Noticias from "./pages/Noticias";
@@ -23,6 +25,8 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/cadastro" element={<Cadastro />} />
+        <Route path="/esqueci-senha" element={<EsqueciSenha />} />
+        <Route path="/redefinir-senha" element={<RedefinirSenha />} />
 
         {/* Rotas privadas (envolvidas em Layout com Navbar) */}
         <Route
