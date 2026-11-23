@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import {
   Alert, Box, Button, Container, FormControl, Grid, InputLabel,
   Link as MuiLink, MenuItem, Select, TextField, Typography,
@@ -121,7 +121,7 @@ export default function Cadastro() {
     <Box
       sx={{
         flex: 1,
-        background: "linear-gradient(135deg, #1D71B8 0%, #19629E 100%)",
+        background: "linear-gradient(135deg, #662c92 0%, #43054e 100%)",
         position: "relative",
         display: "flex",
         flexDirection: "column",
@@ -185,7 +185,7 @@ export default function Cadastro() {
         </Typography>
         <Typography
           sx={{
-            color: "#E8F3FB !important",
+            color: "#F3E6F7 !important",
             fontSize: "1.05rem",
             maxWidth: 360,
             mx: "auto",
@@ -223,7 +223,7 @@ export default function Cadastro() {
             color: "#4A4A4A",
             fontSize: "0.9rem",
             mb: 3,
-            "&:hover": { color: "#1D71B8" },
+            "&:hover": { color: "#662c92" },
           }}
         >
           <ArrowBackIcon sx={{ fontSize: 18 }} />
@@ -244,7 +244,7 @@ export default function Cadastro() {
           variant="h4"
           sx={{
             fontWeight: 700,
-            color: "#1D71B8",
+            color: "#662c92",
             mb: 0.5,
           }}
         >
@@ -367,9 +367,9 @@ export default function Cadastro() {
                   mt: 1,
                   fontWeight: 600,
                   fontSize: "1rem",
-                  bgcolor: "#F9B233",
+                  bgcolor: "#fde100",
                   color: "#323232",
-                  "&:hover": { bgcolor: "#E09F2D" },
+                  "&:hover": { bgcolor: "#ec0089" },
                 }}
               >
                 {carregando ? "Cadastrando..." : "Cadastrar"}
@@ -384,7 +384,7 @@ export default function Cadastro() {
             component={Link}
             to="/login"
             sx={{
-              color: "#1D71B8",
+              color: "#662c92",
               fontWeight: 600,
               textDecoration: "none",
               "&:hover": { textDecoration: "underline" },

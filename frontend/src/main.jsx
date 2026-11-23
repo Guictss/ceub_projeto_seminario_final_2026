@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+﻿import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 
@@ -19,14 +19,14 @@ import { AuthProvider } from "./contexts/AuthContext";
 // BRANCH apresentacao-ceub — paleta oficial do CEUB no lugar do FBVA
 // Para voltar à paleta FBVA: `git checkout main`
 // ═══════════════════════════════════════════════════════════════════════
-const ROXO        = "#662c92";   // antes: AZUL     #1D71B8
-const ROXO_MED    = "#bf0087";   // antes: AZUL_MED #1F7AC4 (lilás CEUB)
-const ROXO_DARK   = "#43054e";   // antes: AZUL_DARK #19629E
-const AMARELO     = "#fde100";   // antes: AMARELO  #F9B233 (amarelo CEUB)
-const MAGENTA     = "#ec0089";   // antes: AMARELO_D #E09F2D (acento quente)
+const ROXO        = "#662c92";   // antes: AZUL     #662c92
+const ROXO_MED    = "#bf0087";   // antes: AZUL_MED #bf0087 (lilás CEUB)
+const ROXO_DARK   = "#43054e";   // antes: AZUL_DARK #43054e
+const AMARELO     = "#fde100";   // antes: AMARELO  #fde100 (amarelo CEUB)
+const MAGENTA     = "#ec0089";   // antes: AMARELO_D #ec0089 (acento quente)
 const DARK        = "#323232";
 const GRAY        = "#4A4A4A";
-const ROXO_LIGHT  = "#F3E6F7";   // antes: LIGHT_BLUE #E8F3FB (derivado)
+const ROXO_LIGHT  = "#F3E6F7";   // antes: LIGHT_BLUE #F3E6F7 (derivado)
 
 const theme = createTheme({
   palette: {

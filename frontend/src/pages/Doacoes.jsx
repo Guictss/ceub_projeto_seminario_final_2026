@@ -111,7 +111,7 @@ export default function Doacoes() {
         elevation={3}
         sx={{
           mb: 3,
-          background: "linear-gradient(135deg, #1D71B8 0%, #2a8dd4 100%)",
+          background: "linear-gradient(135deg, #662c92 0%, #2a8dd4 100%)",
           color: "white",
         }}
       >

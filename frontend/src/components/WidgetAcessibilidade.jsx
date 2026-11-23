@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import {
   Box, IconButton, Paper, Stack, Tooltip, Typography,
 } from "@mui/material";
@@ -100,12 +100,12 @@ export default function WidgetAcessibilidade() {
             zIndex: 1300,
             width: 56,
             height: 56,
-            bgcolor: "#1D71B8",
+            bgcolor: "#662c92",
             color: "white",
             boxShadow: "0 4px 14px rgba(0,0,0,0.3)",
             transition: "all 0.25s ease",
             "&:hover": {
-              bgcolor: "#19629E",
+              bgcolor: "#43054e",
               transform: "scale(1.05)",
             },
           }}
@@ -136,7 +136,7 @@ export default function WidgetAcessibilidade() {
           {/* Cabeçalho */}
           <Box
             sx={{
-              bgcolor: "#1D71B8",
+              bgcolor: "#662c92",
               color: "white",
               px: 2,
               py: 1.5,
@@ -201,7 +201,7 @@ function BotaoAcessibilidade({ icon, label, detalhe, onClick, ativo, desabilitad
         py: 1,
         border: "none",
         borderRadius: 1,
-        bgcolor: ativo ? "#E8F3FB" : "transparent",
+        bgcolor: ativo ? "#F3E6F7" : "transparent",
         color: desabilitado ? "#bdbdbd" : "#323232",
         textAlign: "left",
         fontFamily: "inherit",
@@ -214,7 +214,7 @@ function BotaoAcessibilidade({ icon, label, detalhe, onClick, ativo, desabilitad
     >
       <Box
         sx={{
-          color: ativo ? "#1D71B8" : (desabilitado ? "#bdbdbd" : "#4A4A4A"),
+          color: ativo ? "#662c92" : (desabilitado ? "#bdbdbd" : "#4A4A4A"),
           display: "flex",
         }}
       >

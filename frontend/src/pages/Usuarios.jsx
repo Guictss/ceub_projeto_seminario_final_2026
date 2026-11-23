@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import {
   Alert, Avatar, Box, Button, Chip, CircularProgress, Container,
   Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle,
@@ -248,7 +248,7 @@ export default function Usuarios() {
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
-            <TableRow sx={{ bgcolor: "#E8F3FB" }}>
+            <TableRow sx={{ bgcolor: "#F3E6F7" }}>
               <TableCell sx={{ fontWeight: 600 }}>Usuário</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>E-mail</TableCell>
               <TableCell sx={{ fontWeight: 600 }}>Perfil</TableCell>
@@ -290,7 +290,7 @@ export default function Usuarios() {
                         <Avatar
                           sx={{
                             bgcolor:
-                              u.papel === "professor" ? "#F9B233" : "#1D71B8",
+                              u.papel === "professor" ? "#fde100" : "#662c92",
                             color:
                               u.papel === "professor" ? "#323232" : "#ffffff",
                             width: 36,
@@ -309,8 +309,8 @@ export default function Usuarios() {
                             sx={{
                               height: 18,
                               fontSize: "0.7rem",
-                              bgcolor: "#E8F3FB",
-                              color: "#19629E",
+                              bgcolor: "#F3E6F7",
+                              color: "#43054e",
                             }}
                           />
                         )}
@@ -323,9 +323,9 @@ export default function Usuarios() {
                         size="small"
                         sx={{
                           bgcolor:
-                            u.papel === "professor" ? "#F9B233" : "#E8F3FB",
+                            u.papel === "professor" ? "#fde100" : "#F3E6F7",
                           color:
-                            u.papel === "professor" ? "#323232" : "#19629E",
+                            u.papel === "professor" ? "#323232" : "#43054e",
                           fontWeight: 600,
                         }}
                       />
@@ -336,7 +336,7 @@ export default function Usuarios() {
                       <Tooltip title="Editar">
                         <IconButton
                           onClick={() => abrirEdicao(u)}
-                          sx={{ color: "#1D71B8" }}
+                          sx={{ color: "#662c92" }}
                         >
                           <EditIcon />
                         </IconButton>
@@ -391,7 +391,7 @@ export default function Usuarios() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle sx={{ color: "#1D71B8", fontWeight: 700 }}>
+        <DialogTitle sx={{ color: "#662c92", fontWeight: 700 }}>
           Editar usuário
         </DialogTitle>
         <DialogContent>
@@ -473,7 +473,7 @@ export default function Usuarios() {
             onClick={salvarEdicao}
             variant="contained"
             disabled={salvando}
-            sx={{ bgcolor: "#1D71B8", "&:hover": { bgcolor: "#19629E" } }}
+            sx={{ bgcolor: "#662c92", "&:hover": { bgcolor: "#43054e" } }}
           >
             {salvando ? "Salvando..." : "Salvar"}
           </Button>

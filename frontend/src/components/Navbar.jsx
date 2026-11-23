@@ -48,7 +48,7 @@ export default function Navbar() {
         sx={{
           bgcolor: "white",
           color: "text.primary",
-          borderBottom: "4px solid #F9B233",
+          borderBottom: "4px solid #fde100",
           boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
         }}
       >
@@ -120,7 +120,7 @@ export default function Navbar() {
                     gap: 1.2,
                     px: 1.5,
                     py: 0.5,
-                    bgcolor: "#E8F3FB",
+                    bgcolor: "#F3E6F7",
                     borderRadius: 30,
                   }}
                 >
@@ -223,7 +223,7 @@ export default function Navbar() {
               p: 2,
               bgcolor: "primary.main",
               color: "white",
-              borderBottom: "4px solid #F9B233",
+              borderBottom: "4px solid #fde100",
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1 }}>

@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+﻿import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { Box, Typography } from "@mui/material";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
@@ -30,8 +30,8 @@ const iconeFBVA = L.divIcon({
       <div style="
         position: absolute; top: 0; left: 0;
         width: 48px; height: 48px;
-        background: #F9B233;
-        border: 3px solid #1D71B8;
+        background: #fde100;
+        border: 3px solid #662c92;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -39,7 +39,7 @@ const iconeFBVA = L.divIcon({
         box-shadow: 0 3px 10px rgba(0,0,0,0.35);
       ">
         <!-- SVG de veleiro -->
-        <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="#19629E">
+        <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="#43054e">
           <path d="M11 3 L11 15 L4 15 Z"/>
           <path d="M13 6 L13 15 L19 15 Z"/>
           <path d="M3 16.5 L21 16.5 L19 20 L5 20 Z"/>
@@ -54,7 +54,7 @@ const iconeFBVA = L.divIcon({
         width: 0; height: 0;
         border-left: 9px solid transparent;
         border-right: 9px solid transparent;
-        border-top: 14px solid #F9B233;
+        border-top: 14px solid #fde100;
         filter: drop-shadow(0 2px 2px rgba(0,0,0,0.25));
       "></div>
     </div>
@@ -73,7 +73,7 @@ export default function MapaLocalizacao() {
         borderRadius: 2,
         overflow: "hidden",
         boxShadow: "0 4px 24px rgba(0,0,0,0.12)",
-        border: "4px solid #F9B233",
+        border: "4px solid #fde100",
       }}
     >
       <MapContainer
@@ -97,7 +97,7 @@ export default function MapaLocalizacao() {
             <Box sx={{ minWidth: 220 }}>
               <Typography
                 variant="subtitle2"
-                sx={{ color: "#1D71B8", fontWeight: 700, mb: 0.5 }}
+                sx={{ color: "#662c92", fontWeight: 700, mb: 0.5 }}
               >
                 {SEDE.nome}
               </Typography>

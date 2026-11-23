@@ -1,4 +1,4 @@
-import { useState } from "react";
+﻿import { useState } from "react";
 import {
   Alert, Box, Button, Container, Link as MuiLink,
   TextField, Typography, useMediaQuery, useTheme,
@@ -70,7 +70,7 @@ export default function Login() {
       {!isMobile && (
         <Box sx={{
           flex: 1,
-          background: "linear-gradient(135deg, #19629E 0%, #1F7AC4 100%)",
+          background: "linear-gradient(135deg, #43054e 0%, #bf0087 100%)",
           position: "relative",
           display: "flex",
           alignItems: "center",

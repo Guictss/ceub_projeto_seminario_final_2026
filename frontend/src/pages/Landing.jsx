@@ -97,7 +97,7 @@ function HeroSection() {
       id="informacoes"
       sx={{
         minHeight: { xs: 380, md: 480 },
-        background: "linear-gradient(135deg, #19629E 0%, #1F7AC4 100%)",
+        background: "linear-gradient(135deg, #43054e 0%, #bf0087 100%)",
         position: "relative",
         display: "flex",
         alignItems: "center",
@@ -167,7 +167,7 @@ function CardsPrincipais() {
                 height: "100%",
                 "&:hover": {
                   transform: "translateY(-4px)",
-                  boxShadow: "0 8px 24px rgba(29, 113, 184, 0.2)",
+                  boxShadow: "0 8px 24px rgba(102, 44, 146, 0.2)",
                 },
               }}
             >
@@ -213,7 +213,7 @@ function MascoteZoe() {
     <Box
       sx={{
         py: { xs: 6, md: 12 },
-        background: "linear-gradient(135deg, #E8F3FB 0%, #D0E6F7 100%)",
+        background: "linear-gradient(135deg, #F3E6F7 0%, #E8D5F0 100%)",
         position: "relative",
         overflow: "hidden",
 
@@ -286,7 +286,7 @@ function MascoteZoe() {
                   bgcolor: "white",
                   px: 3, py: 1.5,
                   borderRadius: 4,
-                  boxShadow: "0 8px 24px rgba(29,113,184,0.25)",
+                  boxShadow: "0 8px 24px rgba(102,44,146,0.25)",
                   fontSize: { xs: "1rem", md: "1.15rem" },
                   fontWeight: 600,
                   color: "primary.dark",
@@ -316,7 +316,7 @@ function MascoteZoe() {
                 sx={{
                   width: { xs: 300, md: 480 },
                   animation: "float 4s ease-in-out infinite",
-                  filter: "drop-shadow(0 16px 36px rgba(29,113,184,0.3))",
+                  filter: "drop-shadow(0 16px 36px rgba(102,44,146,0.3))",
                   transition: "transform 0.3s ease",
                   "&:hover": { transform: "scale(1.03)" },
                 }}
@@ -369,7 +369,7 @@ function NoticiasSection() {
   return (
     <Box id="noticias"
       sx={{
-        background: "linear-gradient(135deg, #19629E 0%, #1F7AC4 100%)",
+        background: "linear-gradient(135deg, #43054e 0%, #bf0087 100%)",
         position: "relative",
         py: { xs: 6, md: 10 },
       }}
@@ -472,7 +472,7 @@ function AcessibilidadeSection() {
           </Typography>
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
-          <Card elevation={2} sx={{ bgcolor: "#E8F3FB", border: "1px solid #D0E6F7" }}>
+          <Card elevation={2} sx={{ bgcolor: "#F3E6F7", border: "1px solid #E8D5F0" }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h5" color="primary" fontWeight="bold" gutterBottom
                 sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -485,7 +485,7 @@ function AcessibilidadeSection() {
                       minWidth: 44, height: 44, borderRadius: 2,
                       bgcolor: "white", display: "flex",
                       alignItems: "center", justifyContent: "center",
-                      color: "primary.main", border: "1px solid #D0E6F7",
+                      color: "primary.main", border: "1px solid #E8D5F0",
                     }}>
                       {r.icon}
                     </Box>
@@ -534,7 +534,7 @@ function DoacaoSection({ onResult }) {
   return (
     <Box id="doacao" sx={{
       py: { xs: 6, md: 10 },
-      background: "linear-gradient(135deg, #19629E 0%, #1F7AC4 100%)",
+      background: "linear-gradient(135deg, #43054e 0%, #bf0087 100%)",
       color: "white",
       position: "relative",
       overflow: "hidden",
@@ -558,7 +558,7 @@ function DoacaoSection({ onResult }) {
           top: p.top, left: p.left, right: p.right,
           fontSize: p.size,
           opacity: 0.15,
-          color: "#F9B233",
+          color: "#fde100",
           animation: `float 5s ease-in-out infinite`,
           animationDelay: p.delay,
           "@keyframes float": {
@@ -573,11 +573,11 @@ function DoacaoSection({ onResult }) {
           <Box sx={{
             display: "inline-flex",
             width: 90, height: 90, borderRadius: "50%",
-            bgcolor: "#F9B233",
+            bgcolor: "#fde100",
             alignItems: "center", justifyContent: "center",
             mb: 2, boxShadow: "0 8px 24px rgba(0,0,0,0.3)",
           }}>
-            <FavoriteIcon sx={{ fontSize: 50, color: "#19629E" }} />
+            <FavoriteIcon sx={{ fontSize: 50, color: "#43054e" }} />
           </Box>
           <Typography variant="h3" sx={{ color: "#fff !important", fontWeight: 700, fontSize: { xs: "2rem", md: "2.8rem" } }}>
             Faça uma doação
@@ -586,7 +586,7 @@ function DoacaoSection({ onResult }) {
             Sua contribuição mantém velas no mar e <strong>transforma vidas</strong>.
           </Typography>
         </Box>
-        <Card elevation={8} sx={{ borderTop: "6px solid #F9B233" }}>
+        <Card elevation={8} sx={{ borderTop: "6px solid #fde100" }}>
           <CardContent sx={{ p: 4 }}>
             <Box component="form" onSubmit={handleSubmit}>
               <Stack spacing={2.5}>
@@ -653,7 +653,7 @@ function VoluntarioSection({ onResult }) {
   return (
     <Box id="voluntario" sx={{
       py: { xs: 6, md: 10 },
-      bgcolor: "#E8F3FB",
+      bgcolor: "#F3E6F7",
       position: "relative",
       overflow: "hidden",
     }}>
@@ -686,9 +686,9 @@ function VoluntarioSection({ onResult }) {
             width: 90, height: 90, borderRadius: "50%",
             bgcolor: "primary.main",
             alignItems: "center", justifyContent: "center",
-            mb: 2, boxShadow: "0 8px 24px rgba(29,113,184,0.3)",
+            mb: 2, boxShadow: "0 8px 24px rgba(102,44,146,0.3)",
           }}>
-            <VolunteerActivismIcon sx={{ fontSize: 50, color: "#F9B233" }} />
+            <VolunteerActivismIcon sx={{ fontSize: 50, color: "#fde100" }} />
           </Box>
           <Typography variant="h3" color="primary" fontWeight="bold"
             sx={{ fontSize: { xs: "2rem", md: "2.8rem" } }}>
@@ -698,7 +698,7 @@ function VoluntarioSection({ onResult }) {
             Instrutores, enfermeiros, educadores — <strong>sua ajuda é bem-vinda!</strong>
           </Typography>
         </Box>
-        <Card elevation={6} sx={{ borderTop: "6px solid #1D71B8" }}>
+        <Card elevation={6} sx={{ borderTop: "6px solid #662c92" }}>
           <CardContent sx={{ p: 4 }}>
             <Box component="form" onSubmit={handleSubmit}>
               <Stack spacing={2.5}>
@@ -752,7 +752,7 @@ function OndeEstamosSection() {
             <MapaLocalizacao />
           </Grid>
           <Grid size={{ xs: 12, md: 5 }}>
-            <Card elevation={2} sx={{ bgcolor: "#E8F3FB", height: "100%" }}>
+            <Card elevation={2} sx={{ bgcolor: "#F3E6F7", height: "100%" }}>
               <CardContent sx={{ p: 3 }}>
                 <Stack spacing={3}>
                   <InfoLinha icon={<LocationOnIcon />} titulo="ENDEREÇO"
@@ -784,7 +784,7 @@ function InfoLinha({ icon, titulo, texto }) {
         minWidth: 40, height: 40, borderRadius: 2,
         bgcolor: "white", display: "flex",
         alignItems: "center", justifyContent: "center",
-        color: "primary.main", border: "1px solid #D0E6F7",
+        color: "primary.main", border: "1px solid #E8D5F0",
       }}>
         {icon}
       </Box>
