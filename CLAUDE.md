@@ -645,3 +645,65 @@ function extrairMensagemErro(data) {
 ---
 
 _Última atualização: 2026-11-23 — Etapa 9 (Y) concluída (VLibras + widget acessibilidade). **Toda a parte visual/UX do projeto está pronta.** Próxima: deploy no Render + Vercel._
+
+## 🚀 Deploy (produção)
+
+### Backend — Render.com
+- **Serviço**: `vela-para-todos-api` (Web Service, free tier)
+- **URL**: https://vela-para-todos-api.onrender.com
+- **Banco**: PostgreSQL free tier (mesma região, linkado via Internal Database URL)
+- **Build Command**: `pip install -r requirements.txt && flask db upgrade && python seed.py`
+- **Start Command**: `gunicorn "app:create_app()" --bind 0.0.0.0:$PORT`
+- **Env vars obrigatórias**: `FLASK_ENV=production`, `SECRET_KEY`, `JWT_SECRET_KEY`,
+  `DATABASE_URL` (auto do PostgreSQL linkado), `CORS_ORIGINS`, `PYTHON_VERSION=3.12.4`
+
+### Frontend — Vercel (pendente)
+- **Main (FBVA)**: `vela-para-todos.vercel.app` — branch `main`, root `frontend/`
+- **CEUB**: `vela-para-todos-ceub.vercel.app` — branch `apresentacao-ceub`
+- **Env var**: `VITE_API_URL=https://vela-para-todos-api.onrender.com/api/v1`
+
+### ⚠️ Pegadinhas que custaram tempo no deploy
+
+1. **SQLAlchemy 2+ não acha `psycopg`**: por padrão ele tenta o driver `psycopg` (v3),
+   mas o `requirements.txt` instala `psycopg2-binary`. Fix no `config.py`:
+   ```python
+   def _normalizar_database_url(url: str) -> str:
+       if not url:
+           return url
+       if url.startswith("postgres://"):
+           url = url.replace("postgres://", "postgresql://", 1)
+       if url.startswith("postgresql://") and "+psycopg" not in url:
+           url = url.replace("postgresql://", "postgresql+psycopg2://", 1)
+       return url
+   ```
+
+2. **`python-dateutil` precisa estar explícito no `requirements.txt`**: funciona local
+   porque chega "de carona" com outra lib, mas no Render não. Toda `import` direta
+   TEM que estar declarada.
+
+3. **`.env.example` vs `env.example`**: Windows/VS Code pode salvar sem o ponto inicial.
+   O arquivo tem que ter o ponto, senão o git não trata como dotfile de referência.
+
+4. **Render Free dorme após 15 min sem tráfego**: primeira requisição depois demora
+   30-60 seg. Pra apresentação, acordar o backend 2 min antes.
+
+5. **PowerShell `curl` ≠ curl real**: é alias pro `Invoke-WebRequest` (faz HTML parsing
+   e avisa sobre scripts). Pra APIs JSON, usar `Invoke-RestMethod` (parseia direto)
+   ou `curl.exe` (curl de verdade, nativo no Win10+).
+
+6. **Primeiro deploy falhou precisa `Manual Deploy`**: Render não re-deploya sozinho
+   depois de falhar na primeira criação do serviço. Botão "Manual Deploy → Deploy
+   latest commit" no painel, ou push vazio (`git commit --allow-empty`).
+
+### 🧪 Smoke test pós-deploy
+
+```powershell
+# Health
+Invoke-RestMethod https://vela-para-todos-api.onrender.com/health
+# Esperado: {db: connected, status: healthy, version: 1.0.0}
+
+# Login
+$body = @{email="carlos@teste.com"; senha="Senha123!"} | ConvertTo-Json
+Invoke-RestMethod -Uri https://vela-para-todos-api.onrender.com/api/v1/auth/login `
+  -Method POST -Body $body -ContentType "application/json"
+```
