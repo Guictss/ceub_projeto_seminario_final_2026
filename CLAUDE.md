@@ -644,11 +644,11 @@ function extrairMensagemErro(data) {
 
 ---
 
-_Última atualização: 2026-11-23 — Etapa 9 (Y) concluída (VLibras + widget acessibilidade). **Toda a parte visual/UX do projeto está pronta.** Próxima: deploy no Render + Vercel._
+_Última atualização: 2026-11-24 — Deploy completo em produção (Render + Vercel x2). Backend em `https://vela-para-todos-api.onrender.com`, frontend FBVA em `https://vela-para-todos.vercel.app`, frontend CEUB (preview da branch `apresentacao-ceub`) em `https://vela-para-todos-git-apresentacao-ceub-guicts.vercel.app`._
 
 ## 🚀 Deploy (produção)
 
-### Backend — Render.com
+### Backend — Render.com (concluído 2026-11-23)
 - **Serviço**: `vela-para-todos-api` (Web Service, free tier)
 - **URL**: https://vela-para-todos-api.onrender.com
 - **Banco**: PostgreSQL free tier (mesma região, linkado via Internal Database URL)
@@ -657,10 +657,25 @@ _Última atualização: 2026-11-23 — Etapa 9 (Y) concluída (VLibras + widget 
 - **Env vars obrigatórias**: `FLASK_ENV=production`, `SECRET_KEY`, `JWT_SECRET_KEY`,
   `DATABASE_URL` (auto do PostgreSQL linkado), `CORS_ORIGINS`, `PYTHON_VERSION=3.12.4`
 
-### Frontend — Vercel (pendente)
-- **Main (FBVA)**: `vela-para-todos.vercel.app` — branch `main`, root `frontend/`
-- **CEUB**: `vela-para-todos-ceub.vercel.app` — branch `apresentacao-ceub`
-- **Env var**: `VITE_API_URL=https://vela-para-todos-api.onrender.com/api/v1`
+### Frontend — Vercel (concluído 2026-11-24)
+
+**Projeto 1 — FBVA (branch `main`)**
+- URL de produção: https://vela-para-todos.vercel.app
+- Build: Vite 8, bundle ~1.37 MB (gzip 407 KB)
+- Env var: `VITE_API_URL=https://vela-para-todos-api.onrender.com/api/v1`
+- Root Directory: `frontend`
+
+**Projeto 2 — CEUB (branch `apresentacao-ceub`)**
+- ⚠️ **NÃO é projeto separado na Vercel**: ela não cria projeto novo se você re-importa o mesmo repo da mesma conta. O deploy da branch `apresentacao-ceub` vive como *Preview* dentro do mesmo projeto `vela-para-todos`.
+- URL estável do preview: https://vela-para-todos-git-apresentacao-ceub-guicts.vercel.app
+- **NÃO usar** URLs com hash (`vela-para-todos-XXXXX-guicts.vercel.app`): mudam a cada deploy, não valem pra CORS.
+- Pra ter projeto separado "de verdade" no futuro, criar via "Add New → Project" com **nome explicitamente diferente** na tela de import.
+
+### `CORS_ORIGINS` em produção
+
+```
+http://localhost:5173,http://127.0.0.1:5173,https://vela-para-todos.vercel.app,https://vela-para-todos-git-apresentacao-ceub-guicts.vercel.app
+```
 
 ### ⚠️ Pegadinhas que custaram tempo no deploy
 
@@ -685,7 +700,8 @@ _Última atualização: 2026-11-23 — Etapa 9 (Y) concluída (VLibras + widget 
    O arquivo tem que ter o ponto, senão o git não trata como dotfile de referência.
 
 4. **Render Free dorme após 15 min sem tráfego**: primeira requisição depois demora
-   30-60 seg. Pra apresentação, acordar o backend 2 min antes.
+   30-60 seg. Pra apresentação, acordar o backend 2 min antes com
+   `https://vela-para-todos-api.onrender.com/health`.
 
 5. **PowerShell `curl` ≠ curl real**: é alias pro `Invoke-WebRequest` (faz HTML parsing
    e avisa sobre scripts). Pra APIs JSON, usar `Invoke-RestMethod` (parseia direto)
@@ -695,15 +711,79 @@ _Última atualização: 2026-11-23 — Etapa 9 (Y) concluída (VLibras + widget 
    depois de falhar na primeira criação do serviço. Botão "Manual Deploy → Deploy
    latest commit" no painel, ou push vazio (`git commit --allow-empty`).
 
+7. **Vite 8 (Vercel) é estrito com UTF-8**: arquivos `.jsx` com encoding Latin1/CP1252
+   passam no Vite 7 local mas quebram o build da Vercel com
+   `[UNLOADABLE_DEPENDENCY] - stream did not contain valid UTF-8`.
+   Detecção:
+   ```powershell
+   $bytes = [System.IO.File]::ReadAllBytes("caminho\arquivo.jsx")
+   $utf8 = [System.Text.UTF8Encoding]::new($false, $true)
+   try { $null = $utf8.GetString($bytes); "VALIDO" } catch { "INVALIDO - $($_.Exception.Message)" }
+   ```
+   Fix: `git checkout <branch-boa> -- arquivo.jsx` + re-aplicar mudanças + salvar
+   com `[System.IO.File]::WriteAllText(path, $texto, [System.Text.UTF8Encoding]::new($false))`.
+   Aconteceu no `main.jsx` da branch `apresentacao-ceub` (acentos em comentários
+   corrompidos por edição antiga em PS 5.1).
+
+8. **SPA routing na Vercel precisa de `vercel.json`**: sem ele, URLs tipo `/login`
+   acessadas diretamente (não via navegação do React Router) dão 404 — a Vercel
+   procura arquivo físico. Fix: criar `frontend/vercel.json`:
+   ```json
+   {
+     "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+   }
+   ```
+
+9. **Deployment URL (com hash) ≠ Production/Preview URL na Vercel**: cada deploy
+   tem URL único com hash (`projeto-XXXXX-user.vercel.app`) que muda a cada build.
+   Pro CORS do backend, SEMPRE usar o URL estável
+   (`projeto.vercel.app` para production, `projeto-git-branch-user.vercel.app`
+   para preview). URL com hash só serve pra revisar aquele deploy específico no histórico.
+
+10. **Vercel reusa projeto se importar o mesmo repo**: na tela "Add New → Project",
+    importar um repo já vinculado a outro projeto da mesma conta **NÃO** cria projeto
+    novo — apenas cria um deploy de preview da branch dentro do projeto existente.
+    Pra forçar projeto separado, dar nome explicitamente diferente na tela de import.
+
+11. **Backend único serve todos os frontends**: o Render deploya UMA branch (`main`).
+    PDFs, templates server-side e qualquer lógica backend vêm sempre da `main`,
+    mesmo quando o frontend CEUB chama. O `pdf_relatorio.py` com cores CEUB na
+    branch `apresentacao-ceub` **nunca é executado em produção**. Soluções possíveis:
+    (a) query param `?tema=ceub` na rota + lógica no `pdf_relatorio.py` (recomendado),
+    (b) segundo backend separado, (c) hack temporário trocando cores da `main`.
+    **Status: em aberto** — relatório CEUB sai com cores FBVA em produção.
+
 ### 🧪 Smoke test pós-deploy
 
 ```powershell
-# Health
+# 1. Health check do backend
 Invoke-RestMethod https://vela-para-todos-api.onrender.com/health
 # Esperado: {db: connected, status: healthy, version: 1.0.0}
 
-# Login
+# 2. Login como professor
 $body = @{email="carlos@teste.com"; senha="Senha123!"} | ConvertTo-Json
 Invoke-RestMethod -Uri https://vela-para-todos-api.onrender.com/api/v1/auth/login `
   -Method POST -Body $body -ContentType "application/json"
+
+# 3. Chamada autenticada (usa o access_token do passo 2)
+$login = Invoke-RestMethod -Uri https://vela-para-todos-api.onrender.com/api/v1/auth/login `
+  -Method POST -Body $body -ContentType "application/json"
+$headers = @{ Authorization = "Bearer $($login.access_token)" }
+Invoke-RestMethod -Uri https://vela-para-todos-api.onrender.com/api/v1/aulas -Headers $headers
+# Esperado: 5 aulas do seed
 ```
+
+### 📋 Checklist pré-apresentação
+
+Antes de apresentar (CEUB ou qualquer demo pública):
+
+1. **Acorda o backend** 2-3 min antes:
+   `https://vela-para-todos-api.onrender.com/health` (primeiro request demora 30-60s porque Render Free dorme).
+2. **Abre as 2 abas** já prontas no browser:
+   - FBVA: https://vela-para-todos.vercel.app
+   - CEUB: https://vela-para-todos-git-apresentacao-ceub-guicts.vercel.app
+3. **Credenciais à mão**:
+   - Professor: `carlos@teste.com` / `Senha123!`
+   - Aluno: `maria@teste.com` / `Senha123!`
+4. **Backup local**: `.\start-dev.ps1` pronto pra rodar caso o wifi/Render falhe.
+5. **Hotspot do celular** como fallback de internet.
