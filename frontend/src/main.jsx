@@ -15,30 +15,27 @@ import "./index.css";
 import App from "./App.jsx";
 import { AuthProvider } from "./contexts/AuthContext";
 
-// -----------------------------------------------------------------------
-// BRANCH apresentacao-ceub — paleta oficial do CEUB no lugar do FBVA
-// Para voltar à paleta FBVA: `git checkout main`
-// -----------------------------------------------------------------------
-const ROXO        = "#662c92";   // antes: AZUL     #662c92
-const ROXO_MED    = "#bf0087";   // antes: AZUL_MED #bf0087 (lilás CEUB)
-const ROXO_DARK   = "#43054e";   // antes: AZUL_DARK #43054e
-const AMARELO     = "#fde100";   // antes: AMARELO  #fde100 (amarelo CEUB)
-const MAGENTA     = "#ec0089";   // antes: AMARELO_D #ec0089 (acento quente)
+// Paleta CEUB - branch apresentacao-ceub
+const AZUL        = "#662c92";
+const AZUL_MED    = "#bf0087";
+const AZUL_DARK   = "#43054e";
+const AMARELO     = "#fde100";
+const AMARELO_D   = "#ec0089";
 const DARK        = "#323232";
 const GRAY        = "#4A4A4A";
-const ROXO_LIGHT  = "#F3E6F7";   // antes: LIGHT_BLUE #F3E6F7 (derivado)
+const LIGHT_BLUE  = "#F3E6F7";
 
 const theme = createTheme({
   palette: {
     primary: {
-      main: ROXO,
-      light: ROXO_MED,
-      dark: ROXO_DARK,
+      main: AZUL,
+      light: AZUL_MED,
+      dark: AZUL_DARK,
       contrastText: "#fff",
     },
     secondary: {
       main: AMARELO,
-      dark: MAGENTA,
+      dark: AMARELO_D,
       contrastText: "#000",
     },
     background: {
@@ -49,16 +46,16 @@ const theme = createTheme({
       primary: DARK,
       secondary: GRAY,
     },
-    // Alias "vela" mantido para não quebrar refs existentes no código
+    // Cores extras acessiveis via theme.palette.vela.*
     vela: {
-      azul: ROXO,
-      azulMed: ROXO_MED,
-      azulDark: ROXO_DARK,
+      azul: AZUL,
+      azulMed: AZUL_MED,
+      azulDark: AZUL_DARK,
       amarelo: AMARELO,
-      amareloDark: MAGENTA,
+      amareloDark: AMARELO_D,
       dark: DARK,
       gray: GRAY,
-      lightBlue: ROXO_LIGHT,
+      lightBlue: LIGHT_BLUE,
     },
   },
   typography: {
@@ -74,6 +71,7 @@ const theme = createTheme({
     borderRadius: 8,
   },
   components: {
+    // Botoes com estilo do PHP (border-radius 8, hover elevado)
     MuiButton: {
       styleOverrides: {
         root: {
@@ -84,13 +82,14 @@ const theme = createTheme({
         },
         containedPrimary: {
           "&:hover": {
-            backgroundColor: ROXO_DARK,
+            backgroundColor: AZUL_DARK,
             transform: "translateY(-1px)",
             boxShadow: "0 4px 12px rgba(102, 44, 146, 0.35)",
           },
         },
       },
     },
+    // Cards com border-radius 12 e hover elevado (estilo PHP)
     MuiCard: {
       styleOverrides: {
         root: {
@@ -99,6 +98,7 @@ const theme = createTheme({
         },
       },
     },
+    // Inputs com border mais grossa (estilo PHP)
     MuiOutlinedInput: {
       styleOverrides: {
         root: {
