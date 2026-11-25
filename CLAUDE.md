@@ -530,6 +530,38 @@ São internos do VLibras (tenta usar acelerômetro/motion do dispositivo). **Nã
 ### `<html lang="en">` padrão do Vite deve virar `"pt-BR"`
 Template padrão do Vite cria o `index.html` com `lang="en"` e `<title>frontend</title>`. **Sempre trocar pra `pt-BR`** (screen readers e VLibras dependem disso) e colocar título real do projeto.
 
+### `/aulas` exige autenticação (contrário do que a tabela da seção 8 diz)
+Todos os endpoints de `/aulas` e `/aulas/<id>` **retornam 401 sem JWT**, incluindo os GET.
+A tabela da seção 8 diz "público" mas na prática exige token. Qualquer usuário autenticado
+(aluno ou professor) pode listar e ver detalhes; só professor pode criar/editar/deletar.
+
+### PUT /aulas/<id> exige body COMPLETO (não aceita update parcial)
+Ao editar uma aula, precisa enviar todos os campos obrigatórios (descricao, data, horario,
+duracao_min, vagas), não só os que mudaram. Diferente de outros endpoints onde o PUT aceita
+campos opcionais. Se mandar só `{descricao: "x"}`, retorna 400.
+
+### `/usuarios` usa paginação DIFERENTE do resto do projeto
+Inconsistência de API:
+- `/usuarios` → `{items: [...], page, pages, per_page}` (chave `items`, metadata no root)
+- Resto do projeto → `{data: [...], meta: {page, per_page, total, total_pages}}` (chave `data`, metadata em `meta`)
+
+Padronizar um dia pra reduzir carga cognitiva. Qualquer código consumindo `/usuarios`
+precisa saber usar `items` em vez de `data`.
+
+### `TestingConfig` precisa desativar rate limiter
+Sem `RATELIMIT_ENABLED = False` no `TestingConfig`, testes que fazem múltiplos logins
+seguidos batem no rate limit do `/auth/login` (5/min) e falham com 429. Já está no config.
+
+### SQLAlchemy `Usuario.query.get()` gera LegacyAPIWarning em cada chamada
+Deprecated no SQLAlchemy 2.x. Fix: `db.session.get(Usuario, id)`.
+Não afeta funcionamento, só gera warning. Vale limpar quando houver tempo.
+Arquivos com uso: `routes/auth.py`, `routes/usuarios.py`, `routes/dashboard.py`.
+
+### Validações da API às vezes retornam 422 em vez de 400
+Regras de negócio no backend (aula cheia, dupla inscrição, aula inexistente) podem
+devolver 400, 404, 409 OU 422 dependendo do caso. Nos testes, usar tupla:
+`assert res.status_code in (400, 404, 409, 422)` quando o código exato não importar.
+
 ---
 
 ## 11. Estado atual do projeto (snapshot 2026-11-21)
@@ -638,13 +670,120 @@ function extrairMensagemErro(data) {
 - ✅ ~~Página /usuarios admin~~
 - ✅ ~~Leaflet (mapa real em "Onde estamos")~~
 - ✅ ~~VLibras + widget acessibilidade~~
-- 🚀 **Deploy backend Render + frontend Vercel** — PRÓXIMO
-- GitHub Actions para lint + testes
+- ✅ ~~Deploy backend Render + frontend Vercel~~ (concluído 2026-11-24)
+- ✅ ~~Testes de backend com pytest~~ (concluído 2026-11-25 — 140 testes, 93.8% cobertura)
+- 🚀 **GitHub Actions CI/CD** — PRÓXIMO
+- Testes frontend (Vitest + React Testing Library) — meta 70%+
+- Cypress para E2E (fluxos críticos, recomendação do professor)
+- PDF multi-tema (query param ?tema=ceub no backend)
 - Páginas internas (dashboard, listas) com visual PHP mais enfático
 
 ---
 
 _Última atualização: 2026-11-24 — Deploy completo em produção (Render + Vercel x2). Backend em `https://vela-para-todos-api.onrender.com`, frontend FBVA em `https://vela-para-todos.vercel.app`, frontend CEUB (preview da branch `apresentacao-ceub`) em `https://vela-para-todos-git-apresentacao-ceub-guicts.vercel.app`._
+
+---
+
+## 15. Testes (backend)
+
+### Status atual: **140 testes, 93.8% de cobertura** 🏆
+
+Setup com pytest + pytest-cov + pytest-flask.
+Banco SQLite in-memory, app Flask fresca por teste (isolamento total).
+
+### Como rodar
+
+```powershell
+cd C:\dev\a3-vela\backend
+.\venv\Scripts\Activate.ps1
+
+# Todos os testes com cobertura
+pytest
+
+# Um arquivo específico
+pytest tests/test_auth.py -v
+
+# Uma classe ou teste específico
+pytest tests/test_auth.py::TestLogin -v
+pytest tests/test_auth.py::TestLogin::test_login_com_credenciais_corretas_retorna_tokens -v
+
+# Relatório HTML visual (abre no navegador)
+start htmlcov/index.html
+```
+
+### Estrutura
+
+```
+backend/
+├── pytest.ini              # config principal (testpaths, coverage addopts, markers)
+├── .coveragerc             # omit de tests/, venv/, migrations/, seed.py, openapi.yaml
+└── tests/
+    ├── __init__.py
+    ├── conftest.py         # fixtures compartilhadas (ver abaixo)
+    ├── test_auth.py        # 21 testes — register, login, refresh, logout, me, esqueci/redefinir
+    ├── test_aulas.py       # 26 testes — CRUD + permissões + filtros
+    ├── test_inscricoes.py  # 14 testes — criar, cancelar, minhas, aula cheia, dupla inscrição
+    ├── test_noticias.py    # 18 testes — CRUD público/professor + busca q
+    ├── test_doacoes.py     # 12 testes — criar (público), listar (prof) com resumo
+    ├── test_voluntarios.py # 13 testes — cadastrar, listar, aprovar/recusar
+    ├── test_usuarios.py    # 21 testes — CRUD admin + CANNOT_DELETE_SELF + regra de papel
+    ├── test_dashboard.py   # 5 testes — stats por papel (professor vs aluno)
+    └── test_relatorios.py  # 8 testes — PDF smoke test + filtros data/professor
+```
+
+### Fixtures em `conftest.py` (reutilizáveis em todos os testes)
+
+| Fixture | Uso |
+|---|---|
+| `app` | App Flask em modo testing, banco in-memory, fresca por teste |
+| `client` | Test client HTTP |
+| `professor`, `outro_professor` | Usuários professor (senha: `Senha123!`) |
+| `aluno`, `outro_aluno` | Usuários aluno |
+| `headers_professor`, `headers_aluno` | Dict com `Authorization: Bearer <token>` já pronto |
+| `tokens_professor` | Dict completo com access/refresh/usuario |
+| `aula` | Aula futura (7 dias à frente) com 10 vagas |
+| `aula_lotada` | Aula com só 1 vaga (pra testar bloqueio de inscrição) |
+| `noticia`, `doacao`, `voluntario` | Objetos prontos no banco |
+
+### Config especial do TestingConfig
+
+```python
+class TestingConfig(BaseConfig):
+    TESTING = True
+    SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
+    JWT_SECRET_KEY = "test-key-com-pelo-menos-32-bytes-pra-silenciar-warning"
+    WTF_CSRF_ENABLED = False
+    RATELIMIT_ENABLED = False   # SEM isso, testes de auth batem em 429
+```
+
+### Coverage por módulo (resultado atual)
+
+```
+Name                           Stmts   Miss  Cover
+--------------------------------------------------
+app.py                            53     10  81.1%
+config.py                         41      3  92.7%
+extensions.py                     11      0 100.0%
+models/*                          98      5  94.9%
+routes/aulas.py                   88      6  93.2%
+routes/auth.py                   101      5  95.0%
+routes/dashboard.py               41      1  97.6%
+routes/doacoes.py                 42      2  95.2%
+routes/inscricoes.py              77      6  92.2%
+routes/noticias.py                62      3  95.2%
+routes/relatorios.py              43      3  93.0%
+routes/usuarios.py                91     12  86.8%
+routes/voluntarios.py             46      0 100.0%
+schemas/*                        159     14  91.2%
+services/pdf_relatorio.py         84      2  97.6%
+utils/*                           24      0 100.0%
+--------------------------------------------------
+TOTAL                           1071     66  93.8%
+```
+
+---
+
+_Última atualização: 2026-11-25 — Testes de backend concluídos: 140 testes com pytest, 93.8% de cobertura total. Próximo: GitHub Actions CI/CD._
 
 ## 🚀 Deploy (produção)
 

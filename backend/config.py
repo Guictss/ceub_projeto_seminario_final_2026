@@ -64,8 +64,9 @@ class TestingConfig(BaseConfig):
     """Para rodar pytest — banco em memória."""
     TESTING = True
     SQLALCHEMY_DATABASE_URI = "sqlite:///:memory:"
-    JWT_SECRET_KEY = "test-key"
+    JWT_SECRET_KEY = "test-key-com-pelo-menos-32-bytes-pra-silenciar-warning"
     WTF_CSRF_ENABLED = False
+    RATELIMIT_ENABLED = False
 
 
 class ProductionConfig(BaseConfig):
