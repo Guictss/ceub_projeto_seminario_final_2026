@@ -105,7 +105,7 @@ def login():
 @jwt_required(refresh=True)
 def refresh():
     user_id = get_jwt_identity()
-    usuario = Usuario.query.get(int(user_id))
+    usuario = db.session.get(Usuario, int(user_id))
     if not usuario:
         return jsonify({"error": "Usuário não encontrado", "code": "TOKEN_INVALID"}), 401
 
@@ -133,7 +133,7 @@ def logout():
 @jwt_required()
 def me():
     user_id = int(get_jwt_identity())
-    usuario = Usuario.query.get(user_id)
+    usuario = db.session.get(Usuario, int(user_id))
     if not usuario:
         return jsonify({"error": "Usuário não encontrado", "code": "RESOURCE_NOT_FOUND"}), 404
     return jsonify(UsuarioResponseSchema().dump(usuario)), 200
@@ -217,7 +217,7 @@ def redefinir_senha():
             "code": "TOKEN_MALFORMED",
         }), 400
 
-    usuario = Usuario.query.get(int(user_id))
+    usuario = db.session.get(Usuario, int(user_id))
     if not usuario:
         return jsonify({
             "error": "Usuário não encontrado.",
