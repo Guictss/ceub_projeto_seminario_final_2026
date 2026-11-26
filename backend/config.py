@@ -70,15 +70,14 @@ class TestingConfig(BaseConfig):
 
 
 class ProductionConfig(BaseConfig):
-    """Produção — debug desabilitado, erros mínimos."""
+    """Produção — debug desabilitado, erros genéricos."""
     DEBUG = False
     TESTING = False
 
-    # Em produção, estas variáveis DEVEM vir do ambiente
-    SECRET_KEY = os.environ["SECRET_KEY"]
-    JWT_SECRET_KEY = os.environ["JWT_SECRET_KEY"]
+    SECRET_KEY = os.environ.get("SECRET_KEY", "")
+    JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "")
     SQLALCHEMY_DATABASE_URI = _normalizar_database_url(
-        os.environ["DATABASE_URL"]
+        os.environ.get("DATABASE_URL", "")
     )
 
 
