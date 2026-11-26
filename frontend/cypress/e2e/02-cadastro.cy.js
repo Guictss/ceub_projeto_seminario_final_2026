@@ -16,12 +16,10 @@ describe("Cadastro público", () => {
     // Email único pra não colidir
     const email = `teste${Date.now()}@teste.com`;
 
-    cy.get('input').then(($inputs) => {
-      // Preenche os campos de forma robusta (independente da ordem)
-      cy.get('input[name="nome"], input').first().type("Teste Curto");
-      cy.get('input[type="email"]').type(email);
-      cy.get('input[type="password"]').first().type("abc");
-    });
+    // Preenche os campos de forma robusta
+    cy.get('input[name="nome"], input').first().type("Teste Curto");
+    cy.get('input[type="email"]').type(email);
+    cy.get('input[type="password"]').first().type("abc");
 
     cy.contains("button", /cadastrar|criar/i).click();
 
