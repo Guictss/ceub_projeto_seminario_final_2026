@@ -1,7 +1,7 @@
 # Projeto Vela Para Todos
 
 ![CI](https://github.com/Guictss/ceub_projeto_seminario_final_2026/actions/workflows/ci.yml/badge.svg)
-![Backend coverage](https://img.shields.io/badge/backend_coverage-93.8%25-brightgreen)
+![Backend coverage](https://img.shields.io/badge/coverage-93.8%25-success)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![Node](https://img.shields.io/badge/node-20%20LTS-green)
 ![License](https://img.shields.io/badge/license-academic-lightgrey)
