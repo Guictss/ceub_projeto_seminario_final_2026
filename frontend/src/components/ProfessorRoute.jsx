@@ -18,7 +18,7 @@ export default function ProfessorRoute({ children }) {
             Esta página é exclusiva para professores da FBVA. Seu papel atual é{" "}
             <strong>{usuario.papel}</strong>.
           </p>
-          <Button component={Link} to="/" variant="outlined" color="warning">
+          <Button component={Link} to="/dashboard" variant="outlined" color="warning">
             Voltar ao Dashboard
           </Button>
         </Alert>

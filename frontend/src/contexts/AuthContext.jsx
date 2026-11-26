@@ -3,31 +3,26 @@
  *
  * Fornece:
  *   - usuario:  { id, nome, email, papel } ou null
- *   - loading:  true enquanto hidrata do localStorage
  *   - login(email, senha):  POST /auth/login, salva tokens
  *   - logout():  limpa tokens e estado
  */
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useState } from "react";
 import api from "../services/api";
 
 const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
-  const [usuario, setUsuario] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // ── Hidrata do localStorage ao montar ──
-  useEffect(() => {
+function hidratarUsuarioInicial() {
+  try {
     const stored = localStorage.getItem("usuario");
-    if (stored) {
-      try {
-        setUsuario(JSON.parse(stored));
-      } catch {
-        localStorage.removeItem("usuario");
-      }
-    }
-    setLoading(false);
-  }, []);
+    return stored ? JSON.parse(stored) : null;
+  } catch {
+    localStorage.removeItem("usuario");
+    return null;
+  }
+}
+
+export function AuthProvider({ children }) {
+  const [usuario, setUsuario] = useState(hidratarUsuarioInicial);
 
   async function login(email, senha) {
     const { data } = await api.post("/auth/login", { email, senha });
@@ -46,7 +41,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ usuario, loading, login, logout }}>
+    <AuthContext.Provider value={{ usuario, login, logout }}>
       {children}
     </AuthContext.Provider>
   );
