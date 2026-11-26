@@ -1,15 +1,18 @@
 ﻿"""Blueprint de inscrições — /api/v1/inscricoes/* e /aulas/<id>/inscricoes"""
 from datetime import date
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+
+from flask import Blueprint, jsonify, request
+from flask_jwt_extended import get_jwt_identity
 from marshmallow import ValidationError
 from sqlalchemy.orm import joinedload
 
 from extensions import db
-from models import Inscricao, Aula, Usuario
+from models import Aula, Inscricao, Usuario
 from schemas.inscricao_schema import (
-    InscricaoRequestSchema, InscricaoResponseSchema,
-    InscricaoCreatedSchema, InscritoAulaSchema
+    InscricaoCreatedSchema,
+    InscricaoRequestSchema,
+    InscricaoResponseSchema,
+    InscritoAulaSchema,
 )
 from utils.decorators import aluno_required, professor_required
 from utils.pagination import paginate

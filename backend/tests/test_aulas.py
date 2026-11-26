@@ -12,7 +12,6 @@ import pytest
 from extensions import db
 from models import Aula
 
-
 API = "/api/v1/aulas"
 
 

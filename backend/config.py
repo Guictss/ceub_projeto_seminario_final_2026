@@ -1,6 +1,7 @@
 """Configurações da aplicação Flask por ambiente."""
 import os
 from datetime import timedelta
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -8,7 +9,7 @@ load_dotenv()
 
 def _normalizar_database_url(url: str) -> str:
     """Normaliza a DATABASE_URL para o formato esperado pelo SQLAlchemy 2+."""
-    
+
     if not url:
         return url
     # postgres:// → postgresql:// (Render/Heroku legacy)

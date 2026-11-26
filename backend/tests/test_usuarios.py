@@ -9,7 +9,6 @@ import pytest
 from extensions import db
 from models import Usuario
 
-
 API = "/api/v1/usuarios"
 
 

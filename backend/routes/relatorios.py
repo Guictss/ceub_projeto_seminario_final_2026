@@ -1,7 +1,7 @@
 ﻿"""Blueprint de relatórios — /api/v1/relatorios/*"""
 from datetime import datetime
 
-from flask import Blueprint, make_response, request, jsonify
+from flask import Blueprint, jsonify, make_response, request
 from sqlalchemy.orm import joinedload
 
 from extensions import db

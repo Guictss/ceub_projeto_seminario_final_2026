@@ -6,11 +6,11 @@ conforme o papel do usuário autenticado (professor x aluno).
 from datetime import datetime
 
 from flask import Blueprint, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
-from sqlalchemy import func, distinct
+from flask_jwt_extended import get_jwt_identity, jwt_required
+from sqlalchemy import distinct, func
 
 from extensions import db
-from models import Usuario, Aula, Inscricao, Noticia, Doacao, Voluntario
+from models import Aula, Doacao, Inscricao, Noticia, Usuario, Voluntario
 
 dashboard_bp = Blueprint("dashboard", __name__)
 

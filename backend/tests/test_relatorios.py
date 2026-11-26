@@ -10,7 +10,6 @@ import pytest
 from extensions import db
 from models import Aula, Inscricao
 
-
 API = "/api/v1/relatorios/inscricoes.pdf"
 
 

@@ -1,0 +1,40 @@
+# Config inicial — regras básicas mas úteis.
+# Depois dá pra apertar adicionando mais categorias no [lint.select].
+
+line-length = 120
+target-version = "py312"
+
+# Pastas que o ruff NÃO deve analisar
+exclude = [
+    "venv",
+    ".venv",
+    "migrations",       # arquivos auto-gerados pelo Alembic
+    "instance",
+    ".pytest_cache",
+    "htmlcov",
+    "__pycache__",
+]
+
+[lint]
+# Regras ativas — começamos conservador
+select = [
+    "E",   # pycodestyle errors (sintaxe/style básico)
+    "F",   # pyflakes (unused imports, undefined names — IMPORTANTE)
+    "W",   # pycodestyle warnings
+    "I",   # isort (ordem de imports)
+]
+
+ignore = [
+    "E501",  # line too long — chato e subjetivo
+    "E402",  # module level import not at top — útil pro conftest.py setar FLASK_ENV antes do import
+]
+
+[lint.per-file-ignores]
+# Tests podem ter fixtures que "parecem" unused mas são usadas via pytest magic
+"tests/*" = ["F401", "F811"]
+# Seed pode ter imports só pra garantir que models são registrados
+"seed.py" = ["F401"]
+
+[lint.isort]
+# Agrupa imports do próprio projeto no final
+known-first-party = ["app", "config", "extensions", "models", "routes", "schemas", "services", "utils"]

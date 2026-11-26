@@ -1,12 +1,10 @@
 ﻿"""Blueprint de voluntários — /api/v1/voluntarios/*"""
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
 from marshmallow import ValidationError
 
 from extensions import db, limiter
 from models import Voluntario
-from schemas.voluntario_schema import (
-    VoluntarioRequestSchema, StatusUpdateSchema, VoluntarioResponseSchema
-)
+from schemas.voluntario_schema import StatusUpdateSchema, VoluntarioRequestSchema, VoluntarioResponseSchema
 from utils.decorators import professor_required
 from utils.pagination import paginate
 

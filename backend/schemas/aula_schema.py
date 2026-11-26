@@ -1,6 +1,7 @@
 ﻿"""Schemas Marshmallow para Aula."""
 from datetime import date
-from marshmallow import Schema, fields, validate, validates, ValidationError
+
+from marshmallow import Schema, ValidationError, fields, validate, validates
 
 
 class AulaRequestSchema(Schema):

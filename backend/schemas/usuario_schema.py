@@ -1,7 +1,8 @@
 ﻿"""Schemas Marshmallow para validação de dados de Usuário."""
 from datetime import date
-from marshmallow import Schema, fields, validate, validates, ValidationError
+
 from dateutil.relativedelta import relativedelta
+from marshmallow import Schema, ValidationError, fields, validate, validates
 
 
 class RegisterSchema(Schema):

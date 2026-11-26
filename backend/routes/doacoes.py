@@ -1,6 +1,5 @@
 ﻿"""Blueprint de doações — /api/v1/doacoes/*"""
-from decimal import Decimal
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
 from marshmallow import ValidationError
 from sqlalchemy import func
 

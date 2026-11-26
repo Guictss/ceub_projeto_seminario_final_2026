@@ -1,6 +1,7 @@
 ﻿"""Model Doacao — contribuições financeiras recebidas pelo projeto."""
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Numeric, DateTime, Enum
+
+from sqlalchemy import Column, DateTime, Enum, Integer, Numeric, String
 
 from extensions import db
 

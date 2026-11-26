@@ -1,14 +1,11 @@
 ﻿"""Blueprint de aulas — /api/v1/aulas/*"""
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask import Blueprint, jsonify, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
-from sqlalchemy import and_
 
 from extensions import db
-from models import Aula, Usuario
-from schemas.aula_schema import (
-    AulaRequestSchema, AulaResponseSchema, AulaDetalheSchema
-)
+from models import Aula
+from schemas.aula_schema import AulaDetalheSchema, AulaRequestSchema, AulaResponseSchema
 from utils.decorators import professor_required
 from utils.pagination import paginate
 

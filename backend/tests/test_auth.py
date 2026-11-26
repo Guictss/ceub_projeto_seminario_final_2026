@@ -4,7 +4,6 @@ Cobre: register, login, refresh, logout, me, esqueci-senha, redefinir-senha.
 """
 import pytest
 
-
 API = "/api/v1/auth"
 
 
@@ -205,6 +204,7 @@ class TestRedefinirSenha:
     def _gerar_token_reset(self, app, usuario_id):
         """Helper: gera um token JWT com claim type=password_reset."""
         from datetime import timedelta
+
         from flask_jwt_extended import create_access_token
         with app.app_context():
             return create_access_token(

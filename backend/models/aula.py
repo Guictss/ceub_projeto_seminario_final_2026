@@ -1,10 +1,10 @@
 ﻿"""Model Aula — sessões de vela adaptada ministradas por professores."""
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Date, Time, DateTime, ForeignKey
+
+from sqlalchemy import Column, Date, DateTime, ForeignKey, Integer, String, Time
 from sqlalchemy.orm import relationship
 
 from extensions import db
-
 
 
 class Aula(db.Model):

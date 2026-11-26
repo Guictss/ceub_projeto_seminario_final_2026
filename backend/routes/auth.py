@@ -1,18 +1,25 @@
 """Blueprint de autenticação — /api/v1/auth/*"""
 from datetime import timedelta
 
-from flask import Blueprint, request, jsonify, current_app
+from flask import Blueprint, current_app, jsonify, request
 from flask_jwt_extended import (
-    create_access_token, create_refresh_token, decode_token,
-    jwt_required, get_jwt_identity, get_jwt
+    create_access_token,
+    create_refresh_token,
+    decode_token,
+    get_jwt,
+    get_jwt_identity,
+    jwt_required,
 )
 from marshmallow import ValidationError
 
 from extensions import db, limiter
 from models import Usuario
 from schemas.usuario_schema import (
-    RegisterSchema, LoginSchema, UsuarioResponseSchema,
-    EsqueciSenhaSchema, RedefinirSenhaSchema,
+    EsqueciSenhaSchema,
+    LoginSchema,
+    RedefinirSenhaSchema,
+    RegisterSchema,
+    UsuarioResponseSchema,
 )
 
 auth_bp = Blueprint("auth", __name__)

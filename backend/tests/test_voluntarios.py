@@ -7,7 +7,6 @@ import pytest
 from extensions import db
 from models import Voluntario
 
-
 API = "/api/v1/voluntarios"
 
 

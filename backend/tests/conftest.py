@@ -3,6 +3,7 @@ Fixtures compartilhadas pros testes do backend.
 Banco SQLite in-memory + Flask test client — isolamento total por teste.
 """
 import os
+
 # IMPORTANTE: setar ambiente ANTES de importar create_app
 os.environ["FLASK_ENV"] = "testing"
 
@@ -13,8 +14,7 @@ import pytest
 
 from app import create_app
 from extensions import db as _db
-from models import Usuario, Aula, Inscricao, Noticia, Doacao, Voluntario
-
+from models import Aula, Doacao, Inscricao, Noticia, Usuario, Voluntario
 
 # ═══════════════════════════════════════════════════════════════
 # Fixtures base — app, db, client

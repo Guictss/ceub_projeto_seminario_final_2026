@@ -1,8 +1,9 @@
 ﻿"""Model Usuario — alunos e professores do sistema."""
-from datetime import datetime, date
-from sqlalchemy import Column, Integer, String, Date, DateTime, Enum
+from datetime import datetime
+
+from sqlalchemy import Column, Date, DateTime, Enum, Integer, String
 from sqlalchemy.orm import relationship
-from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.security import check_password_hash, generate_password_hash
 
 from extensions import db
 

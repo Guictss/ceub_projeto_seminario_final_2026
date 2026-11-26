@@ -10,8 +10,8 @@ Regras de autorização:
 Alteração de senha é fora deste escopo (precisa endpoint próprio futuramente
 em /auth/password, que valida a senha atual antes de trocar).
 """
-from flask import Blueprint, request, jsonify
-from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask import Blueprint, jsonify, request
+from flask_jwt_extended import get_jwt_identity, jwt_required
 from marshmallow import ValidationError
 from sqlalchemy import or_
 

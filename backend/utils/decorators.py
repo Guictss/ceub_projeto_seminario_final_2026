@@ -1,8 +1,8 @@
 ﻿"""Decorators de autorização por perfil de usuário."""
 from functools import wraps
-from flask import jsonify
-from flask_jwt_extended import verify_jwt_in_request, get_jwt
 
+from flask import jsonify
+from flask_jwt_extended import get_jwt, verify_jwt_in_request
 
 # Mapeamento de papel singular -> plural correto em português
 _PLURAIS = {

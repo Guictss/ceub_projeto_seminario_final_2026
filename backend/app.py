@@ -1,9 +1,10 @@
 ﻿"""Factory da aplicação Flask — Projeto Vela Para Todos."""
 import os
+
 from flask import Flask, jsonify
 
 from config import config_by_name
-from extensions import db, migrate, jwt, cors, limiter
+from extensions import cors, db, jwt, limiter, migrate
 
 
 def create_app(config_name: str | None = None) -> Flask:
@@ -24,15 +25,15 @@ def create_app(config_name: str | None = None) -> Flask:
     )
 
     # ── Registro de blueprints ──────────────────────────────────────────────
-    from routes.auth import auth_bp, check_if_token_revoked
     from routes.aulas import aulas_bp
-    from routes.inscricoes import inscricoes_bp, inscricoes_aula_bp
+    from routes.auth import auth_bp, check_if_token_revoked
+    from routes.dashboard import dashboard_bp
+    from routes.doacoes import doacoes_bp
+    from routes.inscricoes import inscricoes_aula_bp, inscricoes_bp
     from routes.noticias import noticias_bp
-    from routes.doacoes import doacoes_bp 
-    from routes.voluntarios import voluntarios_bp
     from routes.relatorios import relatorios_bp
     from routes.usuarios import usuarios_bp
-    from routes.dashboard import dashboard_bp
+    from routes.voluntarios import voluntarios_bp
 
     api = app.config["API_PREFIX"]
     app.register_blueprint(auth_bp, url_prefix=f"{api}/auth")

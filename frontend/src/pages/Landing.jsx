@@ -1,12 +1,11 @@
-﻿import { useEffect, useState } from "react";
+﻿import { useState } from "react";
 import {
-  AppBar, Alert, Box, Button, Card, CardContent, Chip, Container,
+  Alert, Box, Button, Card, CardContent, Container,
   FormControl, Grid, InputLabel, MenuItem, Select, Snackbar,
-  Stack, TextField, Toolbar, Typography,
+  Stack, TextField, Typography,
 } from "@mui/material";
 import FavoriteIcon from "@mui/icons-material/Favorite";
 import VolunteerActivismIcon from "@mui/icons-material/VolunteerActivism";
-import LoginIcon from "@mui/icons-material/Login";
 import LocationOnIcon from "@mui/icons-material/LocationOn";
 import PhoneIcon from "@mui/icons-material/Phone";
 import EmailIcon from "@mui/icons-material/Email";
@@ -17,7 +16,6 @@ import ContrastIcon from "@mui/icons-material/Contrast";
 import TextIncreaseIcon from "@mui/icons-material/TextIncrease";
 import KeyboardIcon from "@mui/icons-material/Keyboard";
 import SailingIcon from "@mui/icons-material/Sailing";
-import { Link, useLocation } from "react-router-dom";
 import HeaderLanding from "../components/HeaderLanding";
 import MapaLocalizacao from "../components/MapaLocalizacao";
 import api from "../services/api";

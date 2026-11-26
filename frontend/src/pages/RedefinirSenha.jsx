@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import {
-  Alert, Box, Button, Container, Link as MuiLink,
-  TextField, Typography, useMediaQuery, useTheme,
+  Alert, Box, Button, Container, TextField, 
+  Typography, useMediaQuery, useTheme,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import LockResetIcon from "@mui/icons-material/LockReset";
@@ -27,15 +27,13 @@ export default function RedefinirSenha() {
   const [carregando, setCarregando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
 
-  // Se já logado, vai pro dashboard
-  if (usuario) return <Navigate to="/dashboard" replace />;
-
-  // Se sem token, redireciona pra esqueci-senha
   useEffect(() => {
     if (!token) {
       navigate("/esqueci-senha", { replace: true });
     }
   }, [token, navigate]);
+
+  if (usuario) return <Navigate to="/dashboard" replace />;
 
   function validarLocal() {
     const erros = {};

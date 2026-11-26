@@ -1,6 +1,7 @@
 ﻿"""Model Voluntario — inscrições de voluntários no programa."""
 from datetime import datetime
-from sqlalchemy import Column, Integer, String, Text, DateTime, Enum
+
+from sqlalchemy import Column, DateTime, Enum, Integer, String, Text
 
 from extensions import db
 

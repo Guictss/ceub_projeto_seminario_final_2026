@@ -9,7 +9,6 @@ import pytest
 from extensions import db
 from models import Doacao
 
-
 API = "/api/v1/doacoes"
 
 

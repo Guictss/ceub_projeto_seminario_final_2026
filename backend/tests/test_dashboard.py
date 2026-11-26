@@ -4,7 +4,6 @@ Métricas variam por papel do usuário (professor vs aluno).
 """
 import pytest
 
-
 API = "/api/v1/dashboard/stats"
 
 

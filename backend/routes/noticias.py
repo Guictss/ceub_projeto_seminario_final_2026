@@ -1,12 +1,10 @@
 ﻿"""Blueprint de notícias — /api/v1/noticias/*"""
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, jsonify, request
 from marshmallow import ValidationError
 
 from extensions import db
 from models import Noticia
-from schemas.noticia_schema import (
-    NoticiaRequestSchema, NoticiaListSchema, NoticiaDetailSchema
-)
+from schemas.noticia_schema import NoticiaDetailSchema, NoticiaListSchema, NoticiaRequestSchema
 from utils.decorators import professor_required
 from utils.pagination import paginate
 

@@ -1,5 +1,5 @@
 ﻿"""Helpers de paginação para listagens da API."""
-from flask import request, url_for
+from flask import request
 
 
 def paginate(query, schema, endpoint: str, **endpoint_kwargs):

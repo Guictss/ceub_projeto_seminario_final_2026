@@ -12,7 +12,7 @@ from decimal import Decimal
 
 from app import create_app
 from extensions import db
-from models import Usuario, Aula, Inscricao, Noticia, Doacao, Voluntario
+from models import Aula, Doacao, Inscricao, Noticia, Usuario, Voluntario
 
 
 def seed():
