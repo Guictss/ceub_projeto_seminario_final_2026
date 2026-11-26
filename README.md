@@ -16,7 +16,6 @@ Desenvolvido como **projeto final** da disciplina de **Desenvolvimento Web** do 
 
 | Ambiente | URL |
 |---|---|
-| **Backend (API — Swagger UI)** | https://vela-para-todos-api.onrender.com/apidocs |
 | **Backend (Health check)** | https://vela-para-todos-api.onrender.com/health |
 | **Frontend FBVA** | https://vela-para-todos.vercel.app |
 | **Frontend CEUB** (preview branch `apresentacao-ceub`) | https://vela-para-todos-git-apresentacao-ceub-guicts.vercel.app |
@@ -273,7 +272,7 @@ Todas as rotas estão prefixadas por `/api/v1`.
 | **Relatórios** | `/relatorios/inscricoes.pdf`                           | Professor                                |
 
 Especificação OpenAPI completa: [`backend/openapi.yaml`](backend/openapi.yaml).
-Swagger UI local: `http://localhost:5000/apidocs`.
+Swagger UI disponível **em desenvolvimento local**: `http://localhost:5000/apidocs` (desabilitado em produção por padrão).
 
 ---
 
