@@ -672,8 +672,8 @@ function extrairMensagemErro(data) {
 - ✅ ~~VLibras + widget acessibilidade~~
 - ✅ ~~Deploy backend Render + frontend Vercel~~ (concluído 2026-11-24)
 - ✅ ~~Testes de backend com pytest~~ (concluído 2026-11-25 — 140 testes, 93.8% cobertura)
-- 🚀 **GitHub Actions CI/CD** — PRÓXIMO
-- Testes frontend (Vitest + React Testing Library) — meta 70%+
+- ✅ ~~GitHub Actions CI/CD~~ (concluído 2026-11-26 — 4 jobs: backend-tests, frontend-build, lint-backend, lint-frontend)
+- Testes frontend (Vitest + React Testing Library) — meta 70%+ - Próximo
 - Cypress para E2E (fluxos críticos, recomendação do professor)
 - PDF multi-tema (query param ?tema=ceub no backend)
 - Páginas internas (dashboard, listas) com visual PHP mais enfático
