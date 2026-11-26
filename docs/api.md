@@ -1,7 +1,7 @@
 # API REST — Projeto Vela Para Todos
 
 **Versão:** 1.0.0
-**Base URL (produção):** `https://a3-vela-api.onrender.com/api/v1`
+**Base URL (produção):** `https://vela-para-todos-api.onrender.com/api/v1`
 **Base URL (local):** `http://localhost:5000/api/v1`
 **Formato:** JSON em todas as requisições e respostas
 **Autenticação:** JWT (JSON Web Token) via header `Authorization: Bearer <token>`
@@ -22,8 +22,9 @@
 10. [Endpoints de Notícias](#10-endpoints-de-notícias)
 11. [Endpoints de Voluntários](#11-endpoints-de-voluntários)
 12. [Endpoints de Relatórios](#12-endpoints-de-relatórios)
-13. [Endpoints Utilitários](#13-endpoints-utilitários)
-14. [Regras de Negócio Globais](#14-regras-de-negócio-globais)
+13. [Endpoints de Dashboard](#13-endpoints-de-dashboard)
+14. [Endpoints Utilitários](#14-endpoints-utilitários)
+15. [Regras de Negócio Globais](#15-regras-de-negócio-globais)
 
 ---
 
@@ -36,7 +37,7 @@
 | `GET` | Ler recurso(s) — nunca altera estado |
 | `POST` | Criar novo recurso |
 | `PUT` | Atualizar recurso existente (substituição completa) |
-| `PATCH` | Atualizar parcialmente (não usado nesta API) |
+| `PATCH` | Atualizar parcialmente (usado apenas em `/voluntarios/{id}/status`) |
 | `DELETE` | Remover recurso |
 
 ### Códigos de Status
@@ -87,13 +88,22 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
 4. Quando o `access_token` expirar, frontend chama `POST /auth/refresh` com o `refresh_token`
 5. No logout, frontend chama `POST /auth/logout` para invalidar o token
 
+### Segurança das Senhas
+
+As senhas são **hasheadas com PBKDF2-SHA256** via `werkzeug.security.generate_password_hash`:
+
+- 600.000 iterações (padrão Werkzeug moderno)
+- Salt aleatório por usuário
+- Campo no banco: `senha_hash` (não `senha`)
+- **Irreversível** — mesmo admin não consegue ver a senha original
+
 ### Estrutura do JWT
 
 **Payload do access_token:**
 
 ```json
 {
-  "sub": 42,
+  "sub": "42",
   "nome": "Maria Silva",
   "papel": "aluno",
   "iat": 1762693800,
@@ -140,6 +150,7 @@ Todas as respostas de erro seguem o padrão:
 | `EMAIL_ALREADY_EXISTS` | 409 | E-mail já cadastrado |
 | `ALREADY_ENROLLED` | 409 | Aluno já inscrito nesta aula |
 | `NO_VACANCIES` | 422 | Aula sem vagas disponíveis |
+| `CANNOT_DELETE_SELF` | 409 | Professor não pode deletar a si mesmo |
 | `RATE_LIMIT_EXCEEDED` | 429 | Muitas requisições em pouco tempo |
 
 **Exemplo de erro de validação:**
@@ -166,7 +177,7 @@ Todas as listagens suportam paginação via query strings:
 | `page` | integer | `1` | Página atual (base 1) |
 | `per_page` | integer | `20` | Itens por página (máx: 100) |
 
-**Formato de resposta paginada:**
+**Formato de resposta paginada (padrão geral):**
 
 ```json
 {
@@ -176,15 +187,20 @@ Todas as listagens suportam paginação via query strings:
     "per_page": 20,
     "total": 48,
     "total_pages": 3
-  },
-  "links": {
-    "first": "/api/v1/aulas?page=1&per_page=20",
-    "prev": null,
-    "next": "/api/v1/aulas?page=2&per_page=20",
-    "last": "/api/v1/aulas?page=3&per_page=20"
   }
 }
 ```
+
+> ⚠️ **Exceção:** o endpoint `/usuarios` usa shape diferente:
+> ```json
+> {
+>   "items": [ ... ],
+>   "page": 1,
+>   "per_page": 20,
+>   "pages": 3
+> }
+> ```
+> Inconsistência conhecida, pendente de padronização.
 
 ---
 
@@ -197,6 +213,7 @@ POST /api/v1/auth/register
 ```
 
 **Nível de acesso:** Público
+**Rate limit:** 3 req/min por IP
 
 **Request:**
 
@@ -235,9 +252,7 @@ POST /api/v1/auth/register
 }
 ```
 
-**Erros possíveis:** `400` validação, `409 EMAIL_ALREADY_EXISTS`
-
-**Regra de negócio:** Cadastros de perfil `professor` em produção devem ser aprovados posteriormente por outro professor (fora do escopo desta versão — nesta MVP qualquer um pode se cadastrar como professor).
+**Erros possíveis:** `400` validação, `409 EMAIL_ALREADY_EXISTS`, `429 RATE_LIMIT_EXCEEDED`
 
 ---
 
@@ -248,7 +263,6 @@ POST /api/v1/auth/login
 ```
 
 **Nível de acesso:** Público
-
 **Rate limit:** 5 tentativas/minuto por IP
 
 **Request:**
@@ -319,7 +333,7 @@ POST /api/v1/auth/logout
 }
 ```
 
-**Efeito:** Adiciona o token atual à blocklist, invalidando-o antes da expiração natural.
+**Efeito:** Adiciona o token atual à blocklist em memória, invalidando-o antes da expiração natural.
 
 ---
 
@@ -343,6 +357,74 @@ GET /api/v1/auth/me
   "criado_em": "2026-11-09T14:30:00Z"
 }
 ```
+
+---
+
+### 5.6 Esqueci Minha Senha
+
+```http
+POST /api/v1/auth/esqueci-senha
+```
+
+**Nível de acesso:** Público
+**Rate limit:** 3 req/min por IP
+
+**Request:**
+
+```json
+{
+  "email": "maria@aluno.com"
+}
+```
+
+**Response 200 OK (sempre):**
+
+```json
+{
+  "message": "Se o e-mail estiver cadastrado, enviaremos as instruções de redefinição."
+}
+```
+
+**Regra de segurança:** A resposta é **sempre 200**, independente de o e-mail existir ou não. Evita **enumeração de usuários** (atacante não consegue descobrir se um e-mail está cadastrado só chamando essa rota).
+
+**Implementação:** O backend gera um JWT com claim `type: "password_reset"` (válido 1h) e, no MVP, registra o link completo nos logs do servidor (`/redefinir-senha?token=XXX`). Em produção real, esse link seria enviado por e-mail.
+
+---
+
+### 5.7 Redefinir Senha
+
+```http
+POST /api/v1/auth/redefinir-senha
+```
+
+**Nível de acesso:** Público (mas exige token JWT válido no body)
+**Rate limit:** 5 req/min por IP
+
+**Request:**
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiIs...",
+  "nova_senha": "NovaSenh@456"
+}
+```
+
+**Validações:**
+
+| Campo | Regra |
+|---|---|
+| `token` | JWT válido com claim `type: "password_reset"`, não expirado |
+| `nova_senha` | Mesmas regras do cadastro (mín. 8 chars, 1 letra, 1 número) |
+
+**Response 200 OK:**
+
+```json
+{
+  "message": "Senha redefinida com sucesso. Faça login com a nova senha."
+}
+```
+
+**Erros possíveis:** `400 VALIDATION_ERROR`, `401 TOKEN_INVALID`, `401 TOKEN_EXPIRED`
 
 ---
 
@@ -452,7 +534,7 @@ POST /api/v1/aulas
 | `horario` | Obrigatório, formato `HH:MM` |
 | `duracao_min` | Obrigatório, entre 15 e 480 minutos |
 | `vagas` | Obrigatório, entre 1 e 50 |
-| `descricao` | Opcional, até 255 caracteres |
+| `descricao` | Opcional (default: ""), até 255 caracteres |
 
 **Regra de negócio:** O `professor_id` é extraído automaticamente do JWT — o professor só pode criar aulas em seu próprio nome.
 
@@ -470,14 +552,15 @@ PUT /api/v1/aulas/{id}
 
 **Request:** mesma estrutura do POST.
 
+⚠️ **PUT exige body COMPLETO** — precisa enviar todos os campos obrigatórios (`data`, `horario`, `duracao_min`, `vagas`, `descricao`), não só os que mudaram. Diferente de outros endpoints, não aceita update parcial.
+
 **Regra de negócio:**
 - Professor só pode editar aulas que ele mesmo criou
 - Se já houver inscritos, não é possível reduzir `vagas` abaixo do número de inscritos atuais
-- Se data/horário mudarem, os alunos inscritos devem ser notificados (responsabilidade do frontend)
 
 **Response 200 OK:** retorna o objeto atualizado.
 
-**Erros:** `403 INSUFFICIENT_PERMISSION`, `404 RESOURCE_NOT_FOUND`, `422` se `vagas < inscritos`.
+**Erros:** `400` body incompleto, `403 INSUFFICIENT_PERMISSION`, `404 RESOURCE_NOT_FOUND`, `422` se `vagas < inscritos`.
 
 ---
 
@@ -491,7 +574,7 @@ DELETE /api/v1/aulas/{id}
 
 **Regra de negócio:** Ao excluir, todas as inscrições associadas são removidas em cascata.
 
-**Response 204 No Content**
+**Response 200/204 No Content**
 
 **Erros:** `403 INSUFFICIENT_PERMISSION`, `404 RESOURCE_NOT_FOUND`
 
@@ -505,9 +588,9 @@ DELETE /api/v1/aulas/{id}
 GET /api/v1/inscricoes
 ```
 
-**Nível de acesso:** Aluno
+**Nível de acesso:** Aluno (JWT — o backend detecta o aluno via token)
 
-**Query strings:** `page`, `per_page`, `futuras` (boolean — filtra apenas aulas que ainda não aconteceram)
+**Query strings:** `page`, `per_page`
 
 **Response 200 OK:**
 
@@ -549,10 +632,10 @@ POST /api/v1/inscricoes
 ```
 
 **Regras de negócio:**
-- Aluno não pode se inscrever duas vezes na mesma aula → `409 ALREADY_ENROLLED`
+- Aluno não pode se inscrever duas vezes na mesma aula → `409 ALREADY_ENROLLED` (ou `422`)
 - Aula precisa ter vagas disponíveis → `422 NO_VACANCIES`
 - Aula precisa estar no futuro → `422` com mensagem "Não é possível se inscrever em aulas passadas"
-- Aluno não pode se inscrever em aulas simultâneas (mesmo horário e data) → `422` com mensagem "Você já tem aula neste horário"
+- Professores não podem se inscrever → `403`
 
 **Response 201 Created:**
 
@@ -575,13 +658,13 @@ DELETE /api/v1/inscricoes/{id}
 
 **Nível de acesso:** Aluno (apenas o dono da inscrição)
 
-**Regras de negócio:**
-- Só pode cancelar inscrições em aulas futuras
+**Regra de negócio:**
+- Só pode cancelar a própria inscrição
 - Cancelamento libera vaga para outro aluno
 
-**Response 204 No Content**
+**Response 200/204 No Content**
 
-**Erros:** `403` se não for o dono, `404`, `422` se aula já aconteceu
+**Erros:** `403` se não for o dono, `404`, `401` sem autenticação
 
 ---
 
@@ -616,6 +699,8 @@ GET /api/v1/aulas/{id}/inscricoes
 
 ## 8. Endpoints de Usuários
 
+> ⚠️ **Shape de paginação diferente:** `/usuarios` usa `items + page/pages/per_page` ao invés de `data + meta` (padrão do resto da API). Veja seção 4.
+
 ### 8.1 Listar Usuários
 
 ```http
@@ -629,14 +714,14 @@ GET /api/v1/usuarios
 | Parâmetro | Tipo | Descrição |
 |---|---|---|
 | `papel` | string | Filtra por `"aluno"` ou `"professor"` |
-| `busca` | string | Busca por nome ou e-mail (contém) |
+| `q` | string | Busca por nome ou e-mail (contém, case-insensitive) |
 | `page`, `per_page` | integer | Paginação |
 
 **Response 200 OK:**
 
 ```json
 {
-  "data": [
+  "items": [
     {
       "id": 42,
       "nome": "Maria Silva Santos",
@@ -646,7 +731,9 @@ GET /api/v1/usuarios
       "criado_em": "2026-10-15T08:00:00Z"
     }
   ],
-  "meta": { "page": 1, "per_page": 20, "total": 48, "total_pages": 3 }
+  "page": 1,
+  "per_page": 20,
+  "pages": 3
 }
 ```
 
@@ -660,58 +747,65 @@ GET /api/v1/usuarios/{id}
 
 **Nível de acesso:** Professor, ou o próprio usuário
 
-**Response 200 OK:** mesma estrutura do item do listagem + total de inscrições (se aluno) ou total de aulas ministradas (se professor).
+**Response 200 OK:**
+
+```json
+{
+  "id": 42,
+  "nome": "Maria Silva Santos",
+  "email": "maria@aluno.com",
+  "data_nascimento": "1998-05-14",
+  "papel": "aluno",
+  "criado_em": "2026-10-15T08:00:00Z"
+}
+```
+
+**Erros:** `403` (aluno tentando ver outro aluno), `404`
 
 ---
 
-### 8.3 Atualizar Perfil
+### 8.3 Atualizar Usuário
 
 ```http
 PUT /api/v1/usuarios/{id}
 ```
 
-**Nível de acesso:** Apenas o próprio usuário
+**Nível de acesso:** Professor (qualquer), ou o próprio usuário (apenas a si)
 
-**Request:**
+**Request (todos os campos opcionais):**
 
 ```json
 {
   "nome": "Maria Silva Santos",
   "email": "maria.nova@aluno.com",
-  "data_nascimento": "1998-05-14"
+  "data_nascimento": "1998-05-14",
+  "papel": "professor"
 }
 ```
 
-**Regra de negócio:** Não é possível alterar o `papel` via esta rota.
+**Regras de negócio:**
+- **Apenas professor pode alterar o campo `papel`** — alunos não conseguem se auto-promover
+- Validação de email único: se mudar e-mail para um já existente → `409`
+
+**Response 200 OK:** retorna o usuário atualizado.
 
 ---
 
-### 8.4 Alterar Senha
+### 8.4 Excluir Usuário
 
 ```http
-PUT /api/v1/usuarios/{id}/senha
+DELETE /api/v1/usuarios/{id}
 ```
 
-**Nível de acesso:** Apenas o próprio usuário
+**Nível de acesso:** Professor
 
-**Request:**
+**Regra de negócio:** **`CANNOT_DELETE_SELF`** — professor não pode deletar a si mesmo (previne auto-bloqueio administrativo). Retorna `409` nesse caso.
 
-```json
-{
-  "senha_atual": "MinhaSenh@123",
-  "senha_nova": "NovaSenh@456"
-}
-```
+**Response 200/204 No Content**
 
-**Validações:** `senha_atual` precisa conferir, `senha_nova` precisa passar nas mesmas regras do cadastro.
+**Erros:** `403` (aluno tentando deletar), `404`, `409 CANNOT_DELETE_SELF`
 
-**Response 200 OK:**
-
-```json
-{
-  "message": "Senha alterada com sucesso"
-}
-```
+> 💡 **Alteração de senha pelo próprio usuário:** não há endpoint dedicado nesta versão. O fluxo de reset é via `/auth/esqueci-senha` + `/auth/redefinir-senha` (ver seção 5.6 e 5.7).
 
 ---
 
@@ -730,7 +824,6 @@ GET /api/v1/doacoes
 | Parâmetro | Tipo | Descrição |
 |---|---|---|
 | `forma_pagamento` | string | `"pix"`, `"transferencia"` ou `"paypal"` |
-| `data_inicio`, `data_fim` | date | Intervalo de datas |
 | `page`, `per_page` | integer | Paginação |
 
 **Response 200 OK:**
@@ -763,6 +856,7 @@ POST /api/v1/doacoes
 ```
 
 **Nível de acesso:** Público
+**Rate limit:** 10 req/min por IP
 
 **Request:**
 
@@ -796,9 +890,9 @@ GET /api/v1/noticias
 
 **Nível de acesso:** Público
 
-**Query strings:** `page`, `per_page`
+**Query strings:** `page`, `per_page`, `q` (busca no título, ilike case-insensitive)
 
-**Response 200 OK:**
+**Response 200 OK (NoticiaListSchema):**
 
 ```json
 {
@@ -807,7 +901,7 @@ GET /api/v1/noticias
       "id": 5,
       "titulo": "Projeto social ensina pessoas com deficiência a velejar",
       "resumo": "A TV Record Brasília exibiu uma reportagem no DF no AR...",
-      "imagem": "/static/noticias/noticia-5.jpg",
+      "imagem": "/assets/img/noticia-5.jpg",
       "publicado_em": "2026-10-20T10:00:00Z"
     }
   ],
@@ -815,7 +909,7 @@ GET /api/v1/noticias
 }
 ```
 
-**Regra de negócio:** O campo `resumo` é os primeiros 200 caracteres do `conteudo`. Para o texto completo, usar o endpoint de detalhes.
+**Regra:** `resumo` é derivado dos primeiros ~200 caracteres do `conteudo`. Para o texto completo, usar o endpoint de detalhes.
 
 ---
 
@@ -827,7 +921,17 @@ GET /api/v1/noticias/{id}
 
 **Nível de acesso:** Público
 
-**Response 200 OK:** retorna o `conteudo` completo em HTML seguro.
+**Response 200 OK (NoticiaDetailSchema — inclui `conteudo` completo):**
+
+```json
+{
+  "id": 5,
+  "titulo": "Projeto social ensina pessoas com deficiência a velejar",
+  "conteudo": "<p>Conteúdo completo da notícia em texto...</p>",
+  "imagem": "/assets/img/noticia-5.jpg",
+  "publicado_em": "2026-10-20T10:00:00Z"
+}
+```
 
 ---
 
@@ -844,10 +948,12 @@ POST /api/v1/noticias
 ```json
 {
   "titulo": "Nova regata no Lago Paranoá",
-  "conteudo": "<p>Conteúdo completo em HTML...</p>",
-  "imagem": "/static/noticias/nova-regata.jpg"
+  "conteudo": "Conteúdo completo da notícia...",
+  "imagem": "/assets/img/nova-regata.jpg"
 }
 ```
+
+**Validações:** título 5-200, conteúdo mínimo 20, imagem opcional até 255 caracteres.
 
 ---
 
@@ -880,6 +986,7 @@ POST /api/v1/voluntarios
 ```
 
 **Nível de acesso:** Público
+**Rate limit:** 3 req/min por IP
 
 **Request:**
 
@@ -890,6 +997,8 @@ POST /api/v1/voluntarios
   "mensagem": "Tenho experiência com vela e gostaria de ajudar..."
 }
 ```
+
+**Validações:** nome mín. 3, e-mail válido, mensagem mín. 20 caracteres.
 
 **Response 201 Created:**
 
@@ -936,6 +1045,8 @@ PATCH /api/v1/voluntarios/{id}/status
 }
 ```
 
+**Validação:** `status` deve ser `"pendente"`, `"aprovado"` ou `"recusado"`.
+
 ---
 
 ## 12. Endpoints de Relatórios
@@ -948,7 +1059,7 @@ GET /api/v1/relatorios/inscricoes.pdf
 
 **Nível de acesso:** Professor
 
-**Query strings:** `data_inicio`, `data_fim` (opcional, filtra o período)
+**Query strings:** `data_inicio`, `data_fim`, `professor_id` (todas opcionais)
 
 **Response 200 OK:**
 
@@ -967,9 +1078,58 @@ Corpo: binário do PDF gerado pelo ReportLab.
 
 ---
 
-## 13. Endpoints Utilitários
+## 13. Endpoints de Dashboard
 
-### 13.1 Health Check
+### 13.1 Estatísticas do Dashboard
+
+```http
+GET /api/v1/dashboard/stats
+```
+
+**Nível de acesso:** JWT (métricas variam por papel)
+
+**Response (professor) 200 OK:**
+
+```json
+{
+  "minhas_aulas": 8,
+  "total_inscricoes": 42,
+  "alunos_unicos": 18,
+  "voluntarios_pendentes": 3,
+  "doacoes_mes_valor": 1225.50,
+  "doacoes_mes_count": 6,
+  "proximas_aulas": [
+    {
+      "id": 1,
+      "data": "2026-11-20",
+      "horario": "14:00",
+      "descricao": "Aula introdutória",
+      "vagas_disponiveis": 3
+    }
+  ],
+  "doacoes_por_forma": [
+    { "forma_pagamento": "pix", "total": 800.00, "count": 4 },
+    { "forma_pagamento": "transferencia", "total": 425.50, "count": 2 }
+  ]
+}
+```
+
+**Response (aluno) 200 OK:**
+
+```json
+{
+  "minhas_inscricoes": 2,
+  "proximas_aulas_inscritas": [ ... ],
+  "aulas_disponiveis": 5,
+  "noticias_recentes": [ ... ]
+}
+```
+
+---
+
+## 14. Endpoints Utilitários
+
+### 14.1 Health Check
 
 ```http
 GET /health
@@ -977,22 +1137,21 @@ GET /health
 
 **Nível de acesso:** Público
 
-**Response 200 OK:**
+**Response 200 OK (sempre):**
 
 ```json
 {
   "status": "healthy",
   "db": "connected",
-  "version": "1.0.0",
-  "timestamp": "2026-11-09T14:30:00Z"
+  "version": "1.0.0"
 }
 ```
 
-Se o banco estiver inacessível, retorna `503 Service Unavailable`.
+Se o banco estiver inacessível, retorna **200** mas com `db: "disconnected"` (não retorna 503). Usado em CI/smoke tests e pelo Render pra health check.
 
 ---
 
-### 13.2 Informações da API
+### 14.2 Informações da API
 
 ```http
 GET /api/v1
@@ -1005,50 +1164,70 @@ GET /api/v1
 ```json
 {
   "name": "Vela Para Todos API",
-  "version": "1.0.0",
-  "docs": "https://a3-vela-api.onrender.com/docs",
-  "openapi": "https://a3-vela-api.onrender.com/openapi.yaml"
+  "version": "1.0.0"
 }
 ```
 
 ---
 
-## 14. Regras de Negócio Globais
+## 15. Regras de Negócio Globais
 
-### 14.1 Fuso Horário
+### 15.1 Fuso Horário
 
 Todos os timestamps armazenados no banco estão em **UTC**. O frontend é responsável por converter para a timezone do usuário (America/Sao_Paulo por padrão).
 
-### 14.2 Validação de Idade
+### 15.2 Validação de Idade
 
 Usuários menores de 14 anos não podem se cadastrar diretamente. Para o Projeto Vela Para Todos, menores de idade precisam ser cadastrados por um responsável (fora do escopo desta versão).
 
-### 14.3 Isolamento entre Perfis
+### 15.3 Isolamento entre Perfis
 
-- **Alunos** veem todas as aulas mas só suas próprias inscrições
-- **Professores** veem apenas as suas aulas e os inscritos nelas
-- Um professor não pode visualizar/editar aulas de outro professor
+- **Alunos** veem todas as aulas (quando autenticados) mas só suas próprias inscrições
+- **Professores** veem todos os usuários, mas só editam/deletam **suas próprias aulas** e os inscritos nelas
+- Um professor não pode editar aulas de outro professor
+- Professor não pode deletar a si mesmo (`CANNOT_DELETE_SELF`)
 
-### 14.4 Soft Delete (Opcional — fora do MVP)
+### 15.4 Soft Delete (fora do MVP)
 
 Nesta versão, DELETE remove permanentemente. Em versões futuras pode-se adotar soft delete (coluna `deleted_at`) para auditoria.
 
-### 14.5 Rate Limiting
+### 15.5 Rate Limiting
 
 | Endpoint | Limite |
 |---|---|
 | `POST /auth/login` | 5 req/min por IP |
 | `POST /auth/register` | 3 req/min por IP |
+| `POST /auth/esqueci-senha` | 3 req/min por IP |
+| `POST /auth/redefinir-senha` | 5 req/min por IP |
 | `POST /doacoes` | 10 req/min por IP |
 | `POST /voluntarios` | 3 req/min por IP |
-| Demais endpoints | 100 req/min por usuário autenticado |
+| Demais endpoints | sem limite específico |
 
-### 14.6 Versionamento da API
+> ⚠️ Em `DevelopmentConfig` e `TestingConfig`, o rate limiter está **desativado** pra não atrapalhar desenvolvimento e testes automatizados. Em produção (`ProductionConfig`) está ativo.
+
+### 15.6 Versionamento da API
 
 A URL contém `/v1` para permitir evolução futura com `/v2` sem quebrar clientes existentes. Mudanças breaking exigem nova versão; mudanças retrocompatíveis (novos campos opcionais, novos endpoints) ficam na mesma versão.
+
+### 15.7 Segurança — Senhas
+
+- Senhas armazenadas como hash **PBKDF2-SHA256** (600.000 iterações + salt aleatório por usuário)
+- Via `werkzeug.security.generate_password_hash` — mesmo admin não consegue ver senha original
+- Reset: fluxo híbrido `/auth/esqueci-senha` → `/auth/redefinir-senha` com JWT temporário de 1h
+
+### 15.8 CORS
+
+Origens permitidas em produção:
+```
+http://localhost:5173
+http://127.0.0.1:5173
+https://vela-para-todos.vercel.app
+https://vela-para-todos-git-apresentacao-ceub-guicts.vercel.app
+```
 
 ---
 
 **Documento gerado em:** 09/11/2026
+**Última revisão:** 26/11/2026
 **Versão do contrato:** 1.0.0
 **Autor:** Guilherme Cervi
