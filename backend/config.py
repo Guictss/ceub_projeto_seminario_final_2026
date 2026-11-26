@@ -59,6 +59,7 @@ class DevelopmentConfig(BaseConfig):
     """Desenvolvimento local — debug habilitado, erros detalhados."""
     DEBUG = True
     TESTING = False
+    RATELIMIT_ENABLED = False
 
 
 class TestingConfig(BaseConfig):
