@@ -1,7 +1,7 @@
 # Projeto Vela Para Todos
 
 ![CI](https://github.com/Guictss/ceub_projeto_seminario_final_2026/actions/workflows/ci.yml/badge.svg)
-![Backend coverage](https://img.shields.io/badge/backend%20coverage-93.8%25-brightgreen)
+![Backend coverage](https://img.shields.io/badge/backend_coverage-93.8%25-brightgreen)
 ![Python](https://img.shields.io/badge/python-3.12-blue)
 ![Node](https://img.shields.io/badge/node-20%20LTS-green)
 ![License](https://img.shields.io/badge/license-academic-lightgrey)
@@ -16,7 +16,8 @@ Desenvolvido como **projeto final** da disciplina de **Desenvolvimento Web** do 
 
 | Ambiente | URL |
 |---|---|
-| **Backend (API)** | https://vela-para-todos-api.onrender.com |
+| **Backend (API — Swagger UI)** | https://vela-para-todos-api.onrender.com/apidocs |
+| **Backend (Health check)** | https://vela-para-todos-api.onrender.com/health |
 | **Frontend FBVA** | https://vela-para-todos.vercel.app |
 | **Frontend CEUB** (preview branch `apresentacao-ceub`) | https://vela-para-todos-git-apresentacao-ceub-guicts.vercel.app |
 
